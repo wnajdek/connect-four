@@ -1,1 +1,1 @@
-# connect-four
+# Cztery w rzędzie
