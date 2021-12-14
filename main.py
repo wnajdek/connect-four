@@ -1,24 +1,23 @@
 import tkinter as tk
-from tkinter.constants import ANCHOR
 from PIL import Image, ImageTk
 
 def rysuj_monete(x, y, r, canvas):
         return canvas.create_oval(x - r, y - r, x + r, y + r, fill="#f8f4f4", width=0)
 
 if __name__ == "__main__":
-
     # tworzenie okna aplikacji
     okno = tk.Tk()
     okno.title("Cztery w rzędzie")
-    #okno.resizable(0, 0)
+    okno.resizable(0, 0)
     okno.geometry("600x700")
-
+    
     kogo_tura = "Tura gracza 1"
     
     img = Image.open("moneta.png")
     x = 80
     y = 80
     img = ImageTk.PhotoImage(img.resize((x, y)))
+    
 
     # ramka zawierająca: informację kto ma wykonać ruch, przycisk reset oraz lista rozwijaną do wyboru reguł gry
     header = tk.Frame(okno)
@@ -47,24 +46,13 @@ if __name__ == "__main__":
     # plansza 6 wierszy na 7 kolumn
     plansza = tk.Canvas(okno, bg="blue", width=565, height=485)
     plansza.place(x=15, y=190)
-    
+    plansza.tk.call('tk', 'scaling', 2.0)
     # okno.update()
     # print(plansza.winfo_width(), plansza.winfo_height(), rzad_przyciskow.winfo_width(), header.winfo_width())
 
     for i in range(6):
         for j in range(7):
             rysuj_monete(x=41+j*80+j, y=40+i*80+i, r=35, canvas=plansza)
-    
-    
-    # plansza = tk.Frame(okno)
-    # plansza.place(x=17, y=190, width=700, height=550)
-    
-    # for i in range(6):
-    #     for j in range(7):
-    #         # moneta = tk.Label(plansza, image=img)
-    #         moneta = tk.Label(plansza, highlightthickness=2, highlightbackground="#37d3ff")
-    #         moneta.place(in_= plansza, x=j*80+j, y=i*80+i, width=80, height=80)
 
-    
     okno.mainloop()
     
