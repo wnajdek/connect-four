@@ -1,0 +1,1 @@
+# Tutaj będą umieszczane klasy wyjątków dziedziczące po klasie Exception
