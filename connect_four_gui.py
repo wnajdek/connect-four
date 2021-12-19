@@ -64,5 +64,17 @@ class ConnectFourWindow():
         Ta metoda nic nie zwraca"""
         canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, width=0)
 
+    @property
+    def header(self):
+        return self._header
+    
+    @property
+    def buttons_row(self):
+        return self._buttons_row
+    
+    @property
+    def board(self):
+        return self._board
+
     def mainloop(self):
         tk.mainloop()
