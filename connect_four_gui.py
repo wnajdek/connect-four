@@ -5,6 +5,8 @@ from checker import Checker
 
 class ConnectFourWindow():
     def __init__(self):
+        self._logic = NormalRules(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW))
+        
         # tworzenie okna aplikacji
         self._window = tk.Tk()
         self._window.title("Cztery w rzędzie")
@@ -17,8 +19,6 @@ class ConnectFourWindow():
         self._buttons_row = self.__create_buttons()
         # plansza
         self._board = self.__create_board()
-        
-        self._logic = NormalRules(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW))
     
     def __create_header(self):
         """Metoda odpowiedzialna za tworzenie pola kogo tura, przycisku reset oraz listy rozwijanej do wybotu trybów.
@@ -26,7 +26,8 @@ class ConnectFourWindow():
         header = tk.Frame(self._window)
         header.place(x=0, y=0, height=120, width=600)
 
-        self._lbl_whose_turn = tk.Label(text = "Tura gracza 1", master=header, foreground = "white", background = "black")
+        self._lbl_whose_turn = tk.Label(text = "", master=header, foreground = "white", background = "black")
+        self.change_whose_turn_lbl()
         self._lbl_whose_turn.place(in_= header, x=225, rely=0.25, width=150, height=50)
 
         self._btn_reset = tk.Button(master=header, bg="blue", text="RESET\nGRY", command=lambda: print("RESET"))
@@ -85,6 +86,21 @@ class ConnectFourWindow():
         checker, x, y =  self._logic.dropCoin(col)
         color = "red" if checker == Checker.RED else "yellow" if checker == Checker.YELLOW else "#f8f4f4"
         self.draw_coin(x=41+y*80+y, y=40+x*80+x, r=35, canvas=self._board, color=color)
+        if self._logic.checkWin():
+            self.__congratulate_winner()
+
+        self._logic.changePlayer()
+        self.change_whose_turn_lbl()
+
+    def __congratulate_winner(self):
+        alert = tk.Toplevel(self._window)
+        alert.geometry("700x250")
+        alert.title("Mamy zwycięzcę")
+        lbl_for_winner = tk.Label(alert, text= f"Wygrał {self._logic.whoWin().name}", font=('Roboto 34 bold'))
+        lbl_for_winner.place(relx = 0.5, rely = 0.5, anchor="center")
+
+    def change_whose_turn_lbl(self):
+        self._lbl_whose_turn["text"] = "Tura gracza 1" if self._logic.whose_turn.checker == Checker.RED else "Tura gracza 2"
 
     def mainloop(self):
         tk.mainloop()

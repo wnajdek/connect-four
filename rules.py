@@ -31,7 +31,12 @@ class NormalRules(GameRules):
     def __init__(self, n_rows, n_cols, player1, player2):
         super().__init__(n_rows, n_cols, player1, player2)
         self._whose_turn = self._whoStart()
-    
+        self._n_moves = 0
+
+    @property
+    def whose_turn(self):
+        return self._whose_turn
+
     def _whoStart(self):
         return random.choice([self._player1, self._player2])
 
@@ -43,20 +48,22 @@ class NormalRules(GameRules):
                 break
         else:
             return (-1, -1, -1)  # Tutaj będzie wywoływany wyjątek ColumnIsFullException ALBO zablokuję możliwość kilkania przycisku dla pełnej kolumny
+        
         self._board[free_row][col] = self._whose_turn.checker
+        self._n_moves += 1
         return (self._whose_turn.checker, free_row, col)  # zwraca tuple (jaka_moneta, jaki_wiersz, jaka_kolumna)
 
     def changePlayer(self):
         self._whose_turn = self._player1 if self._whose_turn == self._player2 else self._player2
         return self._whose_turn
 
-    def checkWin(self, player: Player):
-        winning_combo = [player.checker for _ in range(4)]
+    def checkWin(self):
+        winning_combo = [self._whose_turn.checker for _ in range(4)]
         # wygrana poziomo
         for row in self._board:
             for i in range(self._n_cols-3):
                 if row[i:i+4] == winning_combo:
-                    self._winner = player
+                    self._winner = self._whose_turn
                     return True
         
         # wygrana pionowo
@@ -65,19 +72,19 @@ class NormalRules(GameRules):
         for row in transposed_board:
             for i in range(self._n_rows-3):
                 if row[i:i+4] == winning_combo:
-                    self._winner = player
+                    self._winner = self._whose_turn
                     return True
         
         # wygrana na ukos
         for j in range(4):
             for i in range(3):
                 if [self._board[x+i][x+j] for x in range(4)] == winning_combo:
-                    self._winner = player
+                    self._winner = self._whose_turn
                     return True
         for j in range(6, 2, -1):
             for i in range(3):
                 if [self._board[x+i][j-x] for x in range(4)] == winning_combo:
-                    self._winner = player
+                    self._winner = self._whose_turn
                     return True
 
         return False
