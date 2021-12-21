@@ -1,14 +1,14 @@
 class Player():
     """Klasa opisująca gracza"""
-    def __init__(self, name):
+    def __init__(self, name, checker):
         self._name = name
-        # self._my_turn = None
+        self._checker = checker
 
     @property
     def name(self):
         return self._name
 
-    # @property
-    # def my_turn(self):
-    #     return self._my_turn
+    @property
+    def checker(self):
+        return self._checker
     

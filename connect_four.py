@@ -7,6 +7,4 @@ class ConnectFour():
         self._set_of_rules = set_of_rules
         self._player1 = player1
         self._player2 = player2
-        self._window
-        self._board = 
         
