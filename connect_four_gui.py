@@ -1,4 +1,7 @@
 import tkinter as tk
+from player import Player
+from rules import NormalRules
+from checker import Checker
 
 class ConnectFourWindow():
     def __init__(self):
@@ -15,6 +18,7 @@ class ConnectFourWindow():
         # plansza
         self._board = self.__create_board()
         
+        self._logic = NormalRules(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW))
     
     def __create_header(self):
         """Metoda odpowiedzialna za tworzenie pola kogo tura, przycisku reset oraz listy rozwijanej do wybotu trybów.
@@ -42,7 +46,7 @@ class ConnectFourWindow():
         buttons_row.place(x=17, y=120, width=600, height=50)
 
         for i in range(7):
-            przycisk = tk.Button(buttons_row, bg="red", text=str(i), command=lambda s=i: print(s))
+            przycisk = tk.Button(buttons_row, bg="red", text=str(i), command=lambda s=i: self.drop_coin(s))
             przycisk.place(in_= buttons_row, x=i*80+i, width=80, height=50)
 
         return buttons_row
@@ -75,6 +79,12 @@ class ConnectFourWindow():
     @property
     def board(self):
         return self._board
+
+    def drop_coin(self, col):
+        # print(f"Button {col} is clicked!")
+        checker, x, y =  self._logic.dropCoin(col)
+        color = "red" if checker == Checker.RED else "yellow" if checker == Checker.YELLOW else "#f8f4f4"
+        self.draw_coin(x=41+y*80+y, y=40+x*80+x, r=35, canvas=self._board, color=color)
 
     def mainloop(self):
         tk.mainloop()
