@@ -1,15 +1,19 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter.constants import DISABLED
-from exceptions import ColumnIsFullException
+from exceptions import ColumnIsFullException, SetOfRulesNotDefinedException
 from player import Player
-from rules import NormalRules
+from rules import NormalRules, FiveInARow
 from checker import Checker
 
 class ConnectFourWindow():
-    def __init__(self):
-        self._logic = NormalRules(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW))
-        
+    def __init__(self, default=True, logic=None):
+        if default:
+            self._logic = NormalRules(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW))
+        elif not default and logic is not None:
+            self._logic = logic
+        else:
+            raise SetOfRulesNotDefinedException("Nie podano zasad gry podczas inicjalizacji klasy ConnectFourWindow")
         # tworzenie okna aplikacji
         self._window = tk.Tk()
         self._screen_width = self._window.winfo_screenwidth()
@@ -17,6 +21,10 @@ class ConnectFourWindow():
         self._window.title("Cztery w rzędzie")
         self._window.resizable(0, 0)
         
+        # ramka zawierająca: informację kto ma wykonać ruch, przycisk reset oraz lista rozwijaną do wyboru reguł gry
+        self._header = self.__create_header()
+        # przyciski do planszy
+        self._buttons_row = self.__create_buttons()
         # plansza
         self._board = self.__create_board()
         
@@ -25,10 +33,7 @@ class ConnectFourWindow():
         height = self._board.winfo_height() + 230
         self._window.geometry("%dx%d+%d+%d" % (width, height, self._screen_width/2 - width/2, self._screen_height/2 - height/2))
 
-        # ramka zawierająca: informację kto ma wykonać ruch, przycisk reset oraz lista rozwijaną do wyboru reguł gry
-        self._header = self.__create_header()
-        # przyciski do planszy
-        self._buttons_row = self.__create_buttons()
+        
         
     
     def __create_header(self):
@@ -37,16 +42,16 @@ class ConnectFourWindow():
         header = tk.Frame(self._window)
         header.place(x=0, y=0, height=180, width=600)
 
+        self._btn_reset = tk.Button(master=header, bg="blue", text="RESET\nGRY", command=lambda: self.reset())
+        self._btn_reset.place(in_= header, x=30, rely=0.25, width=100, height=50)
+
         self._lbl_whose_turn = tk.Label(text = "", master=header, foreground = "white", background = "black")
         self.change_whose_turn_lbl()
         self._lbl_whose_turn.place(in_= header, x=225, rely=0.25, width=150, height=50)
-
-        self._btn_reset = tk.Button(master=header, bg="blue", text="RESET\nGRY", command=lambda: self.reset())
-        self._btn_reset.place(in_= header, x=30, rely=0.25, width=100, height=50)
         
         default_mode = tk.StringVar(header)
-        default_mode.set("Tryb 1")
-        self._mode_list = tk.OptionMenu(header, default_mode, "Tryb 1", "Tryb 2", "Tryb 3")
+        default_mode.set("Standard")
+        self._mode_list = tk.OptionMenu(header, default_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.set_rules)
         self._mode_list.place(in_= header, x=570, rely=0.25, anchor="ne", width=100, height=50)
 
         return header
@@ -72,9 +77,20 @@ class ConnectFourWindow():
         
         for i in range(self._logic._n_rows):
             for j in range(self._logic._n_cols):
-                self.print_coin(x=44+space*j+80*j, y=44+space*i+80*i, r=40, canvas=board)
+                color = self._logic.board[-i-1][-j-1].name if self._logic.board[-i-1][-j-1] is not None else "#f8f4f4"
+                self.print_coin(x=44+space*j+80*j, y=44+space*i+80*i, r=40, canvas=board, color=color)
 
         return board
+
+    def set_rules(self, option):
+        if option == "Standard":
+            self.reset()
+        elif option == "Pięć w rzędzie":
+            if self._window is not None:
+                self._window.destroy()
+            self.__init__(False, FiveInARow(Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW)))
+        elif option == "PopOut":
+            pass
 
     def print_coin(self, x, y, r, canvas, color="#f8f4f4"):
         """Metoda odpowiedzialna za tworzenie koła.
