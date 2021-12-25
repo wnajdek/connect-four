@@ -23,7 +23,7 @@ class GameRules:
     def changePlayer(self):
         raise NotImplementedError()
 
-    def whoWin(self):
+    def who_win(self):
         raise NotImplementedError()
 
 
@@ -90,7 +90,10 @@ class NormalRules(GameRules):
 
         return False
 
-    def whoWin(self):
+    def check_draw(self):
+        return self._n_moves == 42
+
+    def who_win(self):
         return self._winner
 
 class TimeRules(GameRules):
@@ -112,7 +115,7 @@ class TimeRules(GameRules):
         self._whose_turn = self._player1 if self._whose_turn == self._player2 else self._player2
         return self._whose_turn
 
-    def whoWin(self):
+    def who_win(self):
         pass
 
 class PopOut(GameRules):

@@ -52,7 +52,7 @@ class ConnectFourWindow():
         buttons_row.place(x=17, y=170, width=600, height=50)
 
         for i in range(7):
-            button = tk.Button(buttons_row, bg="red", text=str(i), command=lambda s=i: self.drop_coin(s), highlightthickness=1, relief='flat')
+            button = tk.Button(buttons_row, bg=self._logic.whose_turn.checker.name, text=str(i), command=lambda s=i: self.drop_coin(s), highlightthickness=1, relief='flat')
             button.place(in_= buttons_row, x=i*80+i, width=80, height=50)
 
         return buttons_row
@@ -74,17 +74,17 @@ class ConnectFourWindow():
         Ta metoda nic nie zwraca"""
         canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, width=0)
 
-    @property
-    def header(self):
-        return self._header
+    # @property
+    # def header(self):
+    #     return self._header
     
-    @property
-    def buttons_row(self):
-        return self._buttons_row
+    # @property
+    # def buttons_row(self):
+    #     return self._buttons_row
     
-    @property
-    def board(self):
-        return self._board
+    # @property
+    # def board(self):
+    #     return self._board
 
     def drop_coin(self, col):
         try:
@@ -97,8 +97,11 @@ class ConnectFourWindow():
         self.draw_coin(x=41+y*80+y, y=40+x*80+x, r=35, canvas=self._board, color=color)
         if self._logic.checkWin():
             self.change_buttons_property("state", DISABLED)
-            self.__congratulate_winner()
+            self.print_end_game_info(False)
             return
+        if self._logic.check_draw():
+            self.change_buttons_property("state", DISABLED)
+            self.print_end_game_info(True)
 
         self._logic.changePlayer()
         self.change_buttons_property("bg", self._logic.whose_turn.checker.name)
@@ -108,7 +111,7 @@ class ConnectFourWindow():
         alert = tk.Toplevel(self._window)
         alert.geometry("600x250+%d+%d" % (self._screen_width/2 - 600/2, self._screen_height/2 - 700/2))
         alert.title("Mamy zwycięzcę")
-        lbl_for_winner = tk.Label(alert, text= f"Wygrał {self._logic.whoWin().name}", font=('Roboto 34 bold'))
+        lbl_for_winner = tk.Label(alert, text= f"Wygrał {self._logic.who_win().name}", font=('Roboto 34 bold'))
         lbl_for_winner.place(relx = 0.5, rely = 0.25, anchor="center")
         txt_info = "W celu rozegrania kolejnej partii naciśnij przycisk reset.\nJeżeli chcesz zagrać w innym trybie wybierz tryb z listy rozwijanej."
         lbl_info= tk.Label(alert, text=txt_info, font=('Roboto 12 bold'))
@@ -116,6 +119,26 @@ class ConnectFourWindow():
         btn_ok = tk.Button(alert, text="ok", font=('Roboto 12 bold'), bg=self._logic.whose_turn.checker.name, command=lambda: alert.destroy())
         btn_ok.place(relx = 0.5, rely = 0.75, width=70, height=50, anchor="center")
         # messagebox.showinfo("Mamy zwycięzcę", f"Wygrał {self._logic.whoWin().name}\n{txt_info}")
+
+    def print_end_game_info(self, draw: bool):
+        alert = tk.Toplevel(self._window)
+        alert.geometry("600x250+%d+%d" % (self._screen_width/2 - 600/2, self._screen_height/2 - 700/2))
+        if draw:
+            alert.title("Remis")
+            lbl_header_text = tk.Label(alert, text= f"REMIS", font=('Roboto 34 bold'))
+        else:
+            alert.title("Mamy zwycięzcę")
+            lbl_header_text = tk.Label(alert, text= f"Wygrał {self._logic.who_win().name}", font=('Roboto 34 bold'))  
+        lbl_header_text.place(relx = 0.5, rely = 0.25, anchor="center")
+
+        txt_info = "W celu rozegrania kolejnej partii naciśnij przycisk reset.\nJeżeli chcesz zagrać w innym trybie wybierz tryb z listy rozwijanej."
+        lbl_info = tk.Label(alert, text=txt_info, font=('Roboto 12 bold'))
+        lbl_info.place(relx = 0.5, rely = 0.5, anchor="center")
+        btn_ok = tk.Button(alert, text="ok", font=('Roboto 12 bold'), bg=self._logic.whose_turn.checker.name, command=lambda: alert.destroy())
+        if draw:
+            btn_ok["bg"] = "black"
+            btn_ok["fg"] = "white"
+        btn_ok.place(relx = 0.5, rely = 0.75, width=70, height=50, anchor="center")
 
     def change_whose_turn_lbl(self):
         self._lbl_whose_turn["text"] = "Tura gracza 1" if self._logic.whose_turn.checker == Checker.RED else "Tura gracza 2"
