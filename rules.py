@@ -1,6 +1,7 @@
 import random
 from checker import Checker
 from player import Player
+from exceptions import *
 
 class GameRules:
     """Klasa bazowa reguł gry"""
@@ -47,7 +48,7 @@ class NormalRules(GameRules):
                 free_row = self._n_rows - i - 1
                 break
         else:
-            return (-1, -1, -1)  # Tutaj będzie wywoływany wyjątek ColumnIsFullException ALBO zablokuję możliwość kilkania przycisku dla pełnej kolumny
+            raise ColumnIsFullException("Kolumna jest pełna. Wybierz inną kolumnę.")
         
         self._board[free_row][col] = self._whose_turn.checker
         self._n_moves += 1
@@ -113,3 +114,6 @@ class TimeRules(GameRules):
 
     def whoWin(self):
         pass
+
+class PopOut(GameRules):
+    pass
