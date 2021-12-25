@@ -14,13 +14,13 @@ class GameRules:
         self._winner = None
         self._board = [[None for i in range(self._n_cols)] for j in range(self._n_rows)]
 
-    def _whoStart(self):
+    def _who_start(self):
         raise NotImplementedError()
 
-    def dropCoin(self):
+    def drop_checker(self):
         raise NotImplementedError()
 
-    def changePlayer(self):
+    def change_player(self):
         raise NotImplementedError()
 
     def who_win(self):
@@ -31,17 +31,17 @@ class NormalRules(GameRules):
     """Brak limitu czasowego na ruch. Wygrywa osoba, która ułoży 4 monety w rzędzie."""
     def __init__(self, n_rows, n_cols, player1, player2):
         super().__init__(n_rows, n_cols, player1, player2)
-        self._whose_turn = self._whoStart()
+        self._whose_turn = self._who_start()
         self._n_moves = 0
 
     @property
     def whose_turn(self):
         return self._whose_turn
 
-    def _whoStart(self):
+    def _who_start(self):
         return random.choice([self._player1, self._player2])
 
-    def dropCoin(self, col):
+    def drop_checker(self, col):
         free_row = -1
         for i, spot in enumerate(reversed(self._board)):
             if spot[col] is None:
@@ -54,11 +54,11 @@ class NormalRules(GameRules):
         self._n_moves += 1
         return (self._whose_turn.checker, free_row, col)  # zwraca tuple (jaka_moneta, jaki_wiersz, jaka_kolumna)
 
-    def changePlayer(self):
+    def change_player(self):
         self._whose_turn = self._player1 if self._whose_turn == self._player2 else self._player2
         return self._whose_turn
 
-    def checkWin(self):
+    def check_win(self):
         winning_combo = [self._whose_turn.checker for _ in range(4)]
         # wygrana poziomo
         for row in self._board:
@@ -105,13 +105,13 @@ class TimeRules(GameRules):
         self.is_time_limit = True
         self._time_limit = time_limit
 
-    def whoStart(self):
+    def who_start(self):
         return random.choice([self._player1, self._player2])
 
-    def dropCoin(self, player):
+    def drop_checker(self, player):
         pass
 
-    def changePlayer(self):
+    def change_player(self):
         self._whose_turn = self._player1 if self._whose_turn == self._player2 else self._player2
         return self._whose_turn
 
