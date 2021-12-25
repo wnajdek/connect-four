@@ -14,6 +14,14 @@ class GameRules:
         self._winner = None
         self._board = [[None for i in range(self._n_cols)] for j in range(self._n_rows)]
 
+    @property
+    def n_rows(self):
+        return self._n_rows
+
+    @property
+    def n_cols(self):
+        return self._n_cols
+
     def _who_start(self):
         raise NotImplementedError()
 
@@ -77,13 +85,13 @@ class NormalRules(GameRules):
                     return True
         
         # wygrana na ukos
-        for j in range(4):
-            for i in range(3):
+        for j in range(self._n_cols-3):
+            for i in range(self._n_rows-3):
                 if [self._board[x+i][x+j] for x in range(4)] == winning_combo:
                     self._winner = self._whose_turn
                     return True
-        for j in range(6, 2, -1):
-            for i in range(3):
+        for j in range(self._n_cols-1, 2, -1):
+            for i in range(self._n_rows-3):
                 if [self._board[x+i][j-x] for x in range(4)] == winning_combo:
                     self._winner = self._whose_turn
                     return True
@@ -91,7 +99,7 @@ class NormalRules(GameRules):
         return False
 
     def check_draw(self):
-        return self._n_moves == 42
+        return self._n_moves == self._n_cols * self._n_rows
 
     def who_win(self):
         return self._winner
