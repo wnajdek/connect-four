@@ -203,11 +203,11 @@ class FiveInARow(GameRules):
         return self._whose_turn
 
     def check_win(self):
-        winning_combo = [self._whose_turn.checker for _ in range(4)]
+        winning_combo = [self._whose_turn.checker for _ in range(5)]
         # wygrana poziomo
         for row in self._board:
-            for i in range(self._n_cols-3):
-                if row[i:i+4] == winning_combo:
+            for i in range(self._n_cols-4):
+                if row[i:i+5] == winning_combo:
                     self._winner = self._whose_turn
                     return True
         
@@ -215,20 +215,20 @@ class FiveInARow(GameRules):
         rows_prep = zip(*self._board)
         transposed_board = [list(row) for row in rows_prep]
         for row in transposed_board:
-            for i in range(self._n_rows-3):
-                if row[i:i+4] == winning_combo:
+            for i in range(self._n_rows-4):
+                if row[i:i+5] == winning_combo:
                     self._winner = self._whose_turn
                     return True
         
         # wygrana na ukos
-        for j in range(self._n_cols-3):
-            for i in range(self._n_rows-3):
-                if [self._board[x+i][x+j] for x in range(4)] == winning_combo:
+        for j in range(self._n_cols-4):
+            for i in range(self._n_rows-4):
+                if [self._board[x+i][x+j] for x in range(5)] == winning_combo:
                     self._winner = self._whose_turn
                     return True
-        for j in range(self._n_cols-1, 2, -1):
-            for i in range(self._n_rows-3):
-                if [self._board[x+i][j-x] for x in range(4)] == winning_combo:
+        for j in range(self._n_cols-1, 3, -1):
+            for i in range(self._n_rows-4):
+                if [self._board[x+i][j-x] for x in range(5)] == winning_combo:
                     self._winner = self._whose_turn
                     return True
 

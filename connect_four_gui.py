@@ -3,7 +3,7 @@ from tkinter import messagebox
 from tkinter.constants import DISABLED
 from exceptions import ColumnIsFullException, SetOfRulesNotDefinedException
 from player import Player
-from rules import NormalRules, FiveInARow
+from rules import NormalRules, FiveInARow, PopOut
 from checker import Checker
 
 class ConnectFourWindow():
@@ -49,9 +49,9 @@ class ConnectFourWindow():
         self.change_whose_turn_lbl()
         self._lbl_whose_turn.place(in_= header, x=225, rely=0.25, width=150, height=50)
         
-        default_mode = tk.StringVar(header)
-        default_mode.set("Standard")
-        self._mode_list = tk.OptionMenu(header, default_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.set_rules)
+        self._current_mode = tk.StringVar(header)
+        self._mode_list = tk.OptionMenu(header, self._current_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.set_rules)
+        self.set_current_mode()
         self._mode_list.place(in_= header, x=570, rely=0.25, anchor="ne", width=100, height=50)
 
         return header
@@ -81,6 +81,15 @@ class ConnectFourWindow():
                 self.print_coin(x=44+space*j+80*j, y=44+space*i+80*i, r=40, canvas=board, color=color)
 
         return board
+
+    def set_current_mode(self):
+        """Metoda zmienia widoczną nazwę trybu na liście rozwijanej na aktywny tryb gry"""
+        if isinstance(self._logic, NormalRules):
+            self._current_mode.set("Standard")
+        elif isinstance(self._logic, FiveInARow):
+            self._current_mode.set("Pięć w rzędzie")
+        elif isinstance(self._logic, PopOut):
+            self._current_mode.set("PopOut")
 
     def set_rules(self, option):
         if option == "Standard":
