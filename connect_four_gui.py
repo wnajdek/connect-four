@@ -16,23 +16,29 @@ class ConnectFourWindow():
             raise SetOfRulesNotDefinedException("Nie podano zasad gry podczas inicjalizacji klasy ConnectFourWindow")
         # tworzenie okna aplikacji
         self._window = tk.Tk()
-        self._screen_width = self._window.winfo_screenwidth()
-        self._screen_height = self._window.winfo_screenheight()
         self._window.title("Cztery w rzędzie")
         self._window.resizable(0, 0)
-        
+
+        self._screen_width = self._window.winfo_screenwidth()
+        self._screen_height = self._window.winfo_screenheight()
+
+        # plansza
+        self._board = self.__create_board()
+        self._window.update()
         # ramka zawierająca: informację kto ma wykonać ruch, przycisk reset oraz lista rozwijaną do wyboru reguł gry
         self._header = self.__create_header()
         # przyciski do planszy
         self._buttons_row = self.__create_buttons()
-        # plansza
-        self._board = self.__create_board()
         
-        self._window.update()
         width = self._board.winfo_width()
         height = self._board.winfo_height() + 230
         self._window.geometry("%dx%d+%d+%d" % (width, height, self._screen_width/2 - width/2, self._screen_height/2 - height/2))
 
+        # pole, które po najechaniu wyświetla zasady
+        self._lbl_mode_rules = tk.Label(self._window, text="Zasady", bg="black", fg="white", font="Roboto 12 bold")
+        self._lbl_mode_rules.place(x=0, y=0, width=70, height=40)
+        self._lbl_mode_rules.bind("<Enter>", self.display_rules)
+        self._lbl_mode_rules.bind("<Leave>", self.hide_rules)
         
         
     
@@ -40,19 +46,19 @@ class ConnectFourWindow():
         """Metoda odpowiedzialna za tworzenie pola kogo tura, przycisku reset oraz listy rozwijanej do wyboru trybów.
         Metoda zwraca ramkę, w której znajdują się wyżej wymienione rzeczy."""
         header = tk.Frame(self._window)
-        header.place(x=0, y=0, height=180, width=600)
+        header.place(x=0, y=0, height=180, width=self._board.winfo_width())
 
         self._btn_reset = tk.Button(master=header, bg="blue", text="RESET\nGRY", command=lambda: self.reset())
-        self._btn_reset.place(in_= header, x=30, rely=0.25, width=100, height=50)
+        self._btn_reset.place(in_= header, x=80, rely=0.5, anchor="center", width=100, height=50)
 
         self._lbl_whose_turn = tk.Label(text = "", master=header, foreground = "white", background = "black")
         self.change_whose_turn_lbl()
-        self._lbl_whose_turn.place(in_= header, x=225, rely=0.25, width=150, height=50)
+        self._lbl_whose_turn.place(in_= header, relx=0.5, rely=0.5, anchor="center", width=150, height=50)
         
         self._current_mode = tk.StringVar(header)
         self._mode_list = tk.OptionMenu(header, self._current_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.set_rules)
         self.set_current_mode()
-        self._mode_list.place(in_= header, x=570, rely=0.25, anchor="ne", width=100, height=50)
+        self._mode_list.place(in_= header, x=self._board.winfo_width()-80, rely=0.5, anchor="center", width=100, height=50)
 
         return header
     
@@ -91,6 +97,19 @@ class ConnectFourWindow():
         elif isinstance(self._logic, PopOut):
             self._current_mode.set("PopOut")
 
+    def display_rules(self, event):
+        board_width = self._board.winfo_width()
+        self._mode_rules_popup = tk.Label(self._board, bg="white")
+        self._mode_rules_popup.place(width=self._board.winfo_width(), height=self._board.winfo_height())
+        header_txt = tk.Label(self._mode_rules_popup, text=self._logic.rules_txt_header, bg="white", borderwidth=2, font=('Roboto 34 bold'))
+        header_txt.place(relx=0.5, y=50, anchor="center", width=board_width-50, height=100)
+        info_txt = tk.Label(self._mode_rules_popup, text=self._logic.rules_txt_info, bg="white", wraplength=board_width-100, font=('Roboto 10 bold'), justify="left")
+        info_txt.place(relx=0.5, rely=0.5, anchor="center", width=board_width, height=300)
+        
+
+    def hide_rules(self, event):
+        self._mode_rules_popup.place_forget()
+
     def set_rules(self, option):
         if option == "Standard":
             self.reset()
@@ -105,6 +124,10 @@ class ConnectFourWindow():
         """Metoda odpowiedzialna za tworzenie koła.
         Ta metoda nic nie zwraca"""
         canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, width=0)
+        if color.lower() == "red":
+            canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#cc0000", width=0)
+        elif color.lower() == "yellow":
+            canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#eded00", width=0)
 
     def drop_checker(self, col):
         try:

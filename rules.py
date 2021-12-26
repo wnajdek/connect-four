@@ -3,6 +3,7 @@ import random
 from checker import Checker
 from player import Player
 from exceptions import *
+from rules_txt import *
 
 class GameRules:
     """Klasa bazowa reguł gry"""
@@ -45,11 +46,13 @@ class GameRules:
 
 
 class NormalRules(GameRules):
-    """Brak limitu czasowego na ruch. Wygrywa osoba, która ułoży 4 monety w rzędzie."""
+    """Wygrywa osoba, która ułoży 4 monety w rzędzie. Wilekośc planszy jest dowolna."""
     def __init__(self, n_rows, n_cols, player1, player2):
         super().__init__(n_rows, n_cols, player1, player2)
         self._whose_turn = self._who_start()
         self._n_moves = 0
+        self._rules_txt_header = NORMAL_RULES_HEADER
+        self._rules_txt_info = NORMAL_RULES_INFO
 
     @property
     def n_rows(self):
@@ -66,6 +69,14 @@ class NormalRules(GameRules):
     @property
     def board(self):
         return self._board
+
+    @property
+    def rules_txt_header(self):
+        return self._rules_txt_header
+    
+    @property
+    def rules_txt_info(self):
+        return self._rules_txt_info
 
     def _who_start(self):
         return random.choice([self._player1, self._player2])
@@ -155,6 +166,9 @@ class FiveInARow(GameRules):
         super().__init__(6, 9, player1, player2)
         self._whose_turn = self._who_start()
         self._n_moves = 0
+        self._rules_txt_header = FIVE_IN_A_ROW_HEADER
+        self._rules_txt_info = FIVE_IN_A_ROW_INFO
+
         self._fill_two_cols()
 
     @property
@@ -172,6 +186,14 @@ class FiveInARow(GameRules):
     @property
     def board(self):
         return self._board
+
+    @property
+    def rules_txt_header(self):
+        return self._rules_txt_header
+    
+    @property
+    def rules_txt_info(self):
+        return self._rules_txt_info
 
     def _fill_two_cols(self):
         for i in range(self._n_rows):
@@ -235,7 +257,7 @@ class FiveInARow(GameRules):
         return False
 
     def check_draw(self):
-        return self._n_moves == self._n_cols * self._n_rows
+        return self._n_moves == 42
 
     def who_win(self):
         return self._winner
