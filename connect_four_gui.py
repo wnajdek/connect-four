@@ -5,6 +5,7 @@ from exceptions import ColumnIsFullException, SetOfRulesNotDefinedException
 from player import Player
 from rules import NormalRules, FiveInARow, PopOut
 from checker import Checker
+from PIL import ImageTk,Image  
 
 class ConnectFourWindow():
     def __init__(self, default=True, logic=None):
@@ -45,20 +46,36 @@ class ConnectFourWindow():
     def __create_header(self):
         """Metoda odpowiedzialna za tworzenie pola kogo tura, przycisku reset oraz listy rozwijanej do wyboru trybów.
         Metoda zwraca ramkę, w której znajdują się wyżej wymienione rzeczy."""
-        header = tk.Frame(self._window)
+        header = tk.Frame(self._window, bg="black")
         header.place(x=0, y=0, height=180, width=self._board.winfo_width())
 
-        self._btn_reset = tk.Button(master=header, bg="blue", text="RESET\nGRY", command=lambda: self.reset())
+        self._btn_reset = tk.Button(master=header, 
+                                    bg="blue", text="RESET\nGRY", 
+                                    command=lambda: self.reset(), 
+                                    font=('Roboto 10 bold'),
+                                    activebackground="blue")
         self._btn_reset.place(in_= header, x=80, rely=0.5, anchor="center", width=100, height=50)
 
-        self._lbl_whose_turn = tk.Label(text = "", master=header, foreground = "white", background = "black")
+        self._lbl_whose_turn = tk.Label(text = "",
+                                        master=header,
+                                        foreground = "white",
+                                        background = "black",
+                                        font=('Roboto 12 bold'))
         self.change_whose_turn_lbl()
-        self._lbl_whose_turn.place(in_= header, relx=0.5, rely=0.5, anchor="center", width=150, height=50)
+        self._lbl_whose_turn.place(in_= header, relx=0.5, rely=0.5, anchor="center", width=150, height=150)
         
         self._current_mode = tk.StringVar(header)
         self._mode_list = tk.OptionMenu(header, self._current_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.set_rules)
+        self._arrow_image = ImageTk.PhotoImage(Image.open("arrow.png"))
+        self._mode_list.configure(font=('Roboto 10 bold'),
+                                  bg="brown", fg="white",
+                                  activebackground="brown",
+                                  highlightbackground="black",
+                                  indicatoron=0,
+                                  compound=tk.RIGHT,
+                                  image=self._arrow_image)
         self.set_current_mode()
-        self._mode_list.place(in_= header, x=self._board.winfo_width()-80, rely=0.5, anchor="center", width=100, height=50)
+        self._mode_list.place(in_= header, x=self._board.winfo_width(), y=5, anchor="ne", width=150, height=50)
 
         return header
     
@@ -68,9 +85,19 @@ class ConnectFourWindow():
         buttons_row = tk.Frame(self._window, borderwidth=0)
         buttons_row.place(x=0, y=180, width=4*(self._logic._n_cols+1)+80*self._logic._n_cols, height=50)
 
+        self._buttons_row_image = self.resize_image("circle_black.png", 30, 30)
+        self._buttons_row_image_HOVER = self.resize_image("circle.png", 30, 30)
         for i in range(self._logic._n_cols):
-            button = tk.Button(buttons_row, bg=self._logic.whose_turn.checker.name, border=1, text=str(i), command=lambda s=i: self.drop_checker(s), highlightthickness=1, relief='flat')
+            button = tk.Button(buttons_row,
+                               bg=self._logic.whose_turn.checker.name,
+                               image = self._buttons_row_image,
+                               border=1, text=str(i),
+                               command=lambda s=i: self.drop_checker(s),
+                               highlightthickness=1,
+                               relief='flat')
             button.place(in_= buttons_row, x=i*84, width=88, height=50)
+            button.bind('<Enter>',  self.on_buttons_row_enter)
+            button.bind('<Leave>',  self.on_buttons_row_leave)
 
         return buttons_row
 
@@ -99,16 +126,27 @@ class ConnectFourWindow():
 
     def display_rules(self, event):
         board_width = self._board.winfo_width()
-        self._mode_rules_popup = tk.Label(self._board, bg="white")
+        self._mode_rules_popup = tk.Label(self._board, bg="white", relief="solid", borderwidth=6)
         self._mode_rules_popup.place(width=self._board.winfo_width(), height=self._board.winfo_height())
-        header_txt = tk.Label(self._mode_rules_popup, text=self._logic.rules_txt_header, bg="white", borderwidth=2, font=('Roboto 34 bold'))
+        header_txt = tk.Label(self._mode_rules_popup, text=self._logic.rules_txt_header, bg="white", font=('Roboto 34 bold'))
         header_txt.place(relx=0.5, y=50, anchor="center", width=board_width-50, height=100)
         info_txt = tk.Label(self._mode_rules_popup, text=self._logic.rules_txt_info, bg="white", wraplength=board_width-100, font=('Roboto 10 bold'), justify="left")
-        info_txt.place(relx=0.5, rely=0.5, anchor="center", width=board_width, height=300)
+        info_txt.place(relx=0.5, rely=0.5, anchor="center", width=board_width-20, height=300)
         
 
     def hide_rules(self, event):
         self._mode_rules_popup.place_forget()
+
+    def resize_image(self, source, width, height):
+        full_size_circle_img = Image.open(source)
+        full_size_circle_img_RGBA = full_size_circle_img.convert("RGBA")
+        resized_circle = full_size_circle_img_RGBA.resize((width, height), Image.ANTIALIAS)
+        return ImageTk.PhotoImage(resized_circle)
+
+    def on_buttons_row_enter(self, event):
+        event.widget["image"] = self._buttons_row_image_HOVER
+    def on_buttons_row_leave(self, event):
+        event.widget["image"] = self._buttons_row_image
 
     def set_rules(self, option):
         if option == "Standard":
@@ -141,6 +179,7 @@ class ConnectFourWindow():
         self.print_coin(x=44+space*y+80*y, y=44+space*x+80*x, r=40, canvas=self._board, color=color)
         if self._logic.check_win():
             self.change_buttons_property("state", DISABLED)
+            self.change_buttons_property("image", self._buttons_row_image)
             self.print_end_game_info(False)
             return
         if self._logic.check_draw():
