@@ -46,7 +46,7 @@ class GameRules:
 
 
 class NormalRules(GameRules):
-    """Wygrywa osoba, która ułoży 4 monety w rzędzie. Wilekośc planszy jest dowolna."""
+    """Wygrywa osoba, która ułoży 4 monety w rzędzie. Wilekość planszy jest dowolna."""
     def __init__(self, n_rows, n_cols, player1, player2):
         super().__init__(n_rows, n_cols, player1, player2)
         self._whose_turn = self._who_start()
@@ -158,9 +158,6 @@ class NormalRules(GameRules):
 #     def who_win(self):
 #         pass
 
-class PopOut(GameRules):
-    pass
-
 class FiveInARow(GameRules):
     def __init__(self, player1, player2):
         super().__init__(6, 9, player1, player2)
@@ -258,6 +255,107 @@ class FiveInARow(GameRules):
 
     def check_draw(self):
         return self._n_moves == 42
+
+    def who_win(self):
+        return self._winner
+
+
+class PopOut(GameRules):
+    """Wygrywa osoba, która ułoży 4 monety w rzędzie. Wielkość planszy jest dowolna."""
+    def __init__(self, n_rows, n_cols, player1, player2):
+        super().__init__(n_rows, n_cols, player1, player2)
+        self._whose_turn = self._who_start()
+        self._n_moves = 0
+        self._rules_txt_header = POP_OUT_HEADER
+        self._rules_txt_info = POP_OUT_INFO
+
+    @property
+    def n_rows(self):
+        return self._n_rows
+
+    @property
+    def n_cols(self):
+        return self._n_cols
+
+    @property
+    def whose_turn(self):
+        return self._whose_turn
+    
+    @property
+    def board(self):
+        return self._board
+
+    @property
+    def rules_txt_header(self):
+        return self._rules_txt_header
+    
+    @property
+    def rules_txt_info(self):
+        return self._rules_txt_info
+
+    def _who_start(self):
+        return random.choice([self._player1, self._player2])
+
+    def drop_checker(self, col):
+        free_row = -1
+        for i, spot in enumerate(reversed(self._board)):
+            if spot[col] is None:
+                free_row = self._n_rows - i - 1
+                break
+        else:
+            raise ColumnIsFullException("Kolumna jest pełna. Wybierz inną kolumnę.")
+        
+        self._board[free_row][col] = self._whose_turn.checker
+        self._n_moves += 1
+        return (self._whose_turn.checker, free_row, col)  # zwraca tuple (jaka_moneta, jaki_wiersz, jaka_kolumna)
+
+    def remove_checker(self, col):
+        if self._board[-1][col] == None:
+            raise CheckerCannotBeRemovedException("Nie ma w tej kolumnie żadnej monety do wyjęcia.")
+        elif self._board[-1][col] != self._whose_turn.checker:
+            raise CheckerCannotBeRemovedException("Moneta, którą próbujesz wyjąć nie jest twoja.")
+        
+        # przesuwanie kolumny monet o 1 w dół
+        for i in range(self._n_rows-1, 0, -1):
+            self._board[i][col] = self._board[i-1][col]
+        
+        self._board[0][col] = None
+
+    def change_player(self):
+        self._whose_turn = self._player1 if self._whose_turn == self._player2 else self._player2
+        return self._whose_turn
+
+    def check_win(self):
+        winning_combo = [self._whose_turn.checker for _ in range(4)]
+        # wygrana poziomo
+        for row in self._board:
+            for i in range(self._n_cols-3):
+                if row[i:i+4] == winning_combo:
+                    self._winner = self._whose_turn
+                    return True
+        
+        # wygrana pionowo
+        rows_prep = zip(*self._board)
+        transposed_board = [list(row) for row in rows_prep]
+        for row in transposed_board:
+            for i in range(self._n_rows-3):
+                if row[i:i+4] == winning_combo:
+                    self._winner = self._whose_turn
+                    return True
+        
+        # wygrana na ukos
+        for j in range(self._n_cols-3):
+            for i in range(self._n_rows-3):
+                if [self._board[x+i][x+j] for x in range(4)] == winning_combo:
+                    self._winner = self._whose_turn
+                    return True
+        for j in range(self._n_cols-1, 2, -1):
+            for i in range(self._n_rows-3):
+                if [self._board[x+i][j-x] for x in range(4)] == winning_combo:
+                    self._winner = self._whose_turn
+                    return True
+
+        return False
 
     def who_win(self):
         return self._winner
