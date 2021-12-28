@@ -1,5 +1,3 @@
-# Tutaj będą umieszczane klasy wyjątków dziedziczące po klasie Exception
-
 class ConnectFourException(Exception):
     """Klasa bazowa dla wszystkich wyjątków w grze 'Cztery w rzędzie'."""
     pass

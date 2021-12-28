@@ -62,7 +62,7 @@ class ConnectFourWindow():
             logic (GameRules): obiekt z zasadami gry
 
         Zwraca:
-            None
+            Obiekt klasy ConnectFourWindow.
         """
         
         if default:
