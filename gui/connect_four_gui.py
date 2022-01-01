@@ -1,11 +1,14 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter.constants import DISABLED
-from exceptions import CheckerCannotBeRemovedException, ColumnIsFullException, SetOfRulesNotDefinedException
-from player import Player
-from rules import NormalRules, FiveInARow, PopOut
-from checker import Checker
 from PIL import ImageTk,Image
+from logic.exceptions import CheckerCannotBeRemovedException, ColumnIsFullException, SetOfRulesNotDefinedException
+from logic.rules_impl.normal_rules import NormalRules
+from logic.rules_impl.five_in_a_row import FiveInARow
+from logic.rules_impl.pop_out import PopOut
+from logic.objects.checker import Checker
+from logic.objects.player import Player
+
 
 class ConnectFourWindow():
     """Klasa dodająca interfejs graficzny.
@@ -136,7 +139,7 @@ class ConnectFourWindow():
         
         self._current_mode = tk.StringVar(header)
         self._mode_list = tk.OptionMenu(header, self._current_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.reset)
-        self._arrow_image = ImageTk.PhotoImage(Image.open("arrow.png"))
+        self._arrow_image = ImageTk.PhotoImage(Image.open("gui/img/arrow.png"))
         self._mode_list.configure(font=('Roboto 10 bold'),
                                   bg="brown", fg="white",
                                   activebackground="brown",
@@ -162,8 +165,8 @@ class ConnectFourWindow():
         self._pop_out_buttons_row = tk.Frame(self._window, borderwidth=0, bg="black")
         self._pop_out_buttons_row.place(x=0, y=130, width=4*(self._logic._n_cols+1)+80*self._logic._n_cols, height=50)
         
-        self._pop_out_image_yellow = ImageTk.PhotoImage(Image.open("x-mark-yellow.png"))
-        self._pop_out_image_red = ImageTk.PhotoImage(Image.open("x-mark-red.png"))
+        self._pop_out_image_yellow = ImageTk.PhotoImage(Image.open("gui/img/x-mark-yellow.png"))
+        self._pop_out_image_red = ImageTk.PhotoImage(Image.open("gui/img/x-mark-red.png"))
         
         whose_turn_color = self._logic.whose_turn.checker.name.lower()
 
@@ -192,8 +195,8 @@ class ConnectFourWindow():
         buttons_row = tk.Frame(self._window, borderwidth=0, bg="black")
         buttons_row.place(x=0, y=180, width=4*(self._logic._n_cols+1)+80*self._logic._n_cols, height=50)
 
-        self._buttons_row_image = self.resize_image("circle_black.png", 30, 30)
-        self._buttons_row_image_HOVER = self.resize_image("circle.png", 30, 30)
+        self._buttons_row_image = self.resize_image("gui/img/circle_black.png", 30, 30)
+        self._buttons_row_image_HOVER = self.resize_image("gui/img/circle.png", 30, 30)
         for i in range(self._logic._n_cols):
             button = tk.Button(buttons_row,
                                bg=self._logic.whose_turn.checker.name,
@@ -383,7 +386,7 @@ class ConnectFourWindow():
         """
 
         try:
-            checker, x, y =  self._logic.drop_checker(col)
+            checker, x, y, win, draw =  self._logic.drop_checker(col)
         except ColumnIsFullException as e:
             self.show_alert("Pełna kolumna", e)
             return
@@ -392,10 +395,16 @@ class ConnectFourWindow():
         space = 4
         self.print_checker(x=44+space*y+80*y, y=44+space*x+80*x, r=40, canvas=self._board, color=color)
         
-        if self.check_win_and_draw():
-            return
+        if win:
+            self.disable_buttons()
+            self.print_end_game_info(False)
+            if self._current_mode.get() == "PopOut":
+                self.change_buttons_property("state", DISABLED, True)
+        if draw:
+            self.disable_buttons()
+            self.print_end_game_info(True)
+            return True
 
-        self._logic.change_player()
         self.change_buttons_property("bg", self._logic.whose_turn.checker.name)
         if self._current_mode.get() == "PopOut":
             curr_pop_out_image = self._pop_out_image_red if self._logic.whose_turn.checker == Checker.RED else self._pop_out_image_yellow
@@ -419,7 +428,7 @@ class ConnectFourWindow():
             None
         """
         try:
-            self._logic.remove_checker(col)
+            win = self._logic.remove_checker(col)
         except CheckerCannotBeRemovedException as e:
             self.show_alert("Nie można wyjąć monety", e)
             return
@@ -430,15 +439,14 @@ class ConnectFourWindow():
             color = "red" if self._logic.board[x][col] == Checker.RED else "yellow" if self._logic.board[x][col] == Checker.YELLOW else "#f8f4f4" 
             self.print_checker(x=44+space*col+80*col, y=44+space*x+80*x, r=40, canvas=self._board, color=color)
 
-        if self.check_win_and_draw():
-            return
+        if win:
+            self.disable_buttons()
+            self.print_end_game_info(False)
+            if self._current_mode.get() == "PopOut":
+                self.change_buttons_property("state", DISABLED, True)
         
-        self._logic.change_player()
         self.change_buttons_property("bg", self._logic.whose_turn.checker.name)
         self.change_whose_turn_lbl()
-
-        if self.check_win_and_draw():
-            return
         
         curr_pop_out_image = self._pop_out_image_red if self._logic.whose_turn.checker == Checker.RED else self._pop_out_image_yellow
         self.change_buttons_property("image", curr_pop_out_image, pop_out=True)
@@ -468,25 +476,11 @@ class ConnectFourWindow():
         txt_info = "W celu rozegrania kolejnej partii naciśnij przycisk reset.\nJeżeli chcesz zagrać w innym trybie wybierz tryb z listy rozwijanej."
         lbl_info = tk.Label(alert, text=txt_info, font=('Roboto 12 bold'))
         lbl_info.place(relx = 0.5, rely = 0.5, anchor="center")
-        btn_ok = tk.Button(alert, text="ok", font=('Roboto 12 bold'), bg=self._logic.whose_turn.checker.name, command=lambda: alert.destroy())
+        btn_ok = tk.Button(alert, text="ok", font=('Roboto 12 bold'), bg=self._logic.who_win().checker.name, command=lambda: alert.destroy())
         if draw:
             btn_ok["bg"] = "black"
             btn_ok["fg"] = "white"
         btn_ok.place(relx = 0.5, rely = 0.75, width=70, height=50, anchor="center")
-
-    def check_win_and_draw(self):
-        if self._logic.check_win():
-            self.disable_buttons()
-            self.print_end_game_info(False)
-            if self._current_mode.get() == "PopOut":
-                self.change_buttons_property("state", DISABLED, True)
-            return True
-        if not self._current_mode.get() == "PopOut" and self._logic.check_draw():
-            self.disable_buttons()
-            self.print_end_game_info(True)
-            return True
-        
-        return False
 
     def change_whose_turn_lbl(self):
         """Zmień informację kogo jest tura.
