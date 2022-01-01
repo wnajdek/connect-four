@@ -52,7 +52,6 @@ class ConnectFourWindow():
         show_alert(title, msg): Wyświetl komunikat.
         reset(option): Resetuj grę w danym trybie.
         mainloop(): Uruchom pętlę zdarzeń.
-        check_win_and_draw(): Sprawdź czy gracz wygrał lub doszło do remisu.
     """
     
     def __init__(self, default=True, logic=None):
@@ -468,15 +467,21 @@ class ConnectFourWindow():
         if draw:
             alert.title("Remis")
             lbl_header_text = tk.Label(alert, text= f"REMIS", font=('Roboto 34 bold'))
+            btn_background = "white"
         else:
             alert.title("Mamy zwycięzcę")
-            lbl_header_text = tk.Label(alert, text= f"Wygrał {self._logic.who_win().name}", font=('Roboto 34 bold'))  
+            lbl_header_text = tk.Label(alert, text= f"Wygrał {self._logic.who_win().name}", font=('Roboto 34 bold')) 
+            btn_background = self._logic.who_win().checker.name
         lbl_header_text.place(relx = 0.5, rely = 0.25, anchor="center")
 
         txt_info = "W celu rozegrania kolejnej partii naciśnij przycisk reset.\nJeżeli chcesz zagrać w innym trybie wybierz tryb z listy rozwijanej."
         lbl_info = tk.Label(alert, text=txt_info, font=('Roboto 12 bold'))
         lbl_info.place(relx = 0.5, rely = 0.5, anchor="center")
-        btn_ok = tk.Button(alert, text="ok", font=('Roboto 12 bold'), bg=self._logic.who_win().checker.name, command=lambda: alert.destroy())
+        btn_ok = tk.Button(alert,
+                           text="ok",
+                           font=('Roboto 12 bold'),
+                           bg=btn_background,
+                           command=lambda: alert.destroy())
         if draw:
             btn_ok["bg"] = "black"
             btn_ok["fg"] = "white"
