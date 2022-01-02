@@ -1,15 +1,15 @@
 import unittest
-from logic.exceptions import ColumnIsFullException
-from logic.rules_impl.normal_rules import NormalRules
+from logic.exceptions import ColumnIsFullException, CheckerCannotBeRemovedException
+from logic.rules_impl.pop_out import PopOut
 from logic.objects.checker import Checker
 from logic.objects.player import Player
 
-class TestNormalMode(unittest.TestCase):
+class TestPopOut(unittest.TestCase):
 
     def setUp(self):
         self.player1 = Player("Gracz 1", Checker.RED)
         self.player2 = Player("Gracz 2", Checker.YELLOW)
-        self.logic = NormalRules(6, 7, self.player1, self.player2)
+        self.logic = PopOut(6, 7, self.player1, self.player2)
 
     def test_one(self):
         """Test sprawdza czy po wykonaniu dwóch ruchów przez każdego z graczy spowoduje,
@@ -87,7 +87,9 @@ class TestNormalMode(unittest.TestCase):
         
         
     def test_five(self):
-        """Test sprawdzający czy po zapełnieniu planszy i braku zwycięzcy będzie informacja o remisie."""
+        """Test sprawdzający czy po zapełnieniu planszy pojawi się informacja o remisie.
+        W tym trybie nie ma remisu, ponieważ gracze mogą wyciągać swoje monety z dolnego rzędu.
+        Remis zawsze będzie False."""
 
         # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
         # układam:
@@ -118,7 +120,7 @@ class TestNormalMode(unittest.TestCase):
         self.assertEqual(draw, False)  # nie ma jeszcze remisu
         self.assertEqual(win, False)  # nie ma zwycięzcy
         checker, row, col, win, draw = self.logic.drop_checker(6) # wrzucanie ostatniej monety (plansza po wrzuceniu jest pełna)
-        self.assertEqual(draw, True)  # jest remis
+        self.assertEqual(draw, False)  # nie ma remisu
         self.assertEqual(win, False)  # nie ma zwycięzcy
 
     def test_six(self):
@@ -152,6 +154,28 @@ class TestNormalMode(unittest.TestCase):
         for _ in range(6):
             self.logic.drop_checker(5)  # zapełniam kolumnę o indeksie 5 (szósta kolumna on lewej)
         self.assertRaises(ColumnIsFullException, self.logic.drop_checker, 5)  # próba wrzucenia monety do pełnej kolumny, oczekiwany wyjątek
+
+    def test_remove(self):
+        """Test sprawdzający możliwośc usuwania monet.
+        Jeżeli moneta nie należy do danego gracza to wyrzucony zostaje wyjątek.
+        Jeżeli w danej kolumnie nie ma żadnej monety to rownież wywołany zostanie wyjątek."""
+        
+        who_start = self.player1
+        self.logic._whose_turn = who_start
+        self.logic.drop_checker(1) 
+        self.logic.drop_checker(1)
+        self.logic.drop_checker(1)
+        self.assertRaises(CheckerCannotBeRemovedException, self.logic.remove_checker, 1)  # moneta, którą gracz chce wyjąć nie należy do tego gracza
+        self.assertRaises(CheckerCannotBeRemovedException, self.logic.remove_checker, 2)  # w tej kolumnie nie ma żadnej monety
+        self.logic.drop_checker(3)
+        self.logic.remove_checker(1)  # poprawne wyjęcie monety
+        self.assertEqual(self.logic.board[5][1], Checker.YELLOW)  # na pozycji (5, 1) powinna być żółta moneta
+        self.assertEqual(self.logic.board[4][1], Checker.RED)  # na pozycji (4, 1) powinna być czerwona moneta
+        self.assertEqual(self.logic.board[3][1], None)  # na pozycji (3, 1) nie powinno być żadnej monety
+        self.logic.drop_checker(1)
+        self.assertEqual(self.logic.board[3][1], Checker.YELLOW)  # na pozycji (3, 1) powinna być teraz żółta moneta, sprawdzam czy w miejsce usuniętych monet można wstawiać monety
+
+    
 if __name__ == "__main__":
     unittest.main()
         
