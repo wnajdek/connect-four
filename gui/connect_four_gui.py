@@ -57,26 +57,34 @@ class ConnectFourWindow():
     def __init__(self, default=True, logic=None):
         """Inicjalizuj obiekt klasy ConnectFourWindow.
         
-        Tworzone jest okno gry i umieszczane w nim są wszystkie obiekty konieczne do rozpoczęcia rozgrywki.
+        Tworzone jest główne okno i wywoływana jest metoda __initialize_game, która ustala
+        odpowiedni rozmiar planszy i dodaje wszystkie widgety wymagane w grze.
 
         Parametry:
             default (bool): czy gra ma zostać uruchomiona w trybie Normalnym
             logic (GameRules): obiekt z zasadami gry
-
-        Zwraca:
-            Obiekt klasy ConnectFourWindow.
         """
+
+        # tworzenie okna aplikacji
+        self._window = tk.Tk()
+        self._window.title("Cztery w rzędzie")
+        self._window.resizable(0, 0)
+
+        self.__initialize_game(default, logic)
         
+        
+    def __initialize_game(self, default=True, logic=None):
+        """Utwórz obiekty na podstawie trybu.
+
+        Na początku ustalany jest tryb w jakim rozpocznie się gra.
+        Tworzone jest okno gry i umieszczane w nim są wszystkie obiekty konieczne do rozpoczęcia rozgrywki.
+        """
         if default:
             self._logic = NormalRules(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW))
         elif not default and logic is not None:
             self._logic = logic
         else:
             raise SetOfRulesNotDefinedException("Nie podano zasad gry podczas inicjalizacji klasy ConnectFourWindow")
-        # tworzenie okna aplikacji
-        self._window = tk.Tk()
-        self._window.title("Cztery w rzędzie")
-        self._window.resizable(0, 0)
 
         self._screen_width = self._window.winfo_screenwidth()
         self._screen_height = self._window.winfo_screenheight()
@@ -106,8 +114,7 @@ class ConnectFourWindow():
         
         if self._current_mode.get() == "PopOut":
             self.__create_pop_out_buttons()
-        
-    
+
     def __create_header(self):
         """Utwórz panel górny gry.
         
@@ -153,7 +160,7 @@ class ConnectFourWindow():
         return header
     
     def __create_pop_out_buttons(self):
-        """Utwórz rząd przycisków dla trybu PopOut.
+        """Utwórz rząd przycisków dla trybu PopOut (przyciski z 'X').
         
         Metoda odpowiedzialna za tworzenie przycisków i umieszczanie ich na planszy. Każdy przycisk odpowiedzialny jest za jedną kolumnę planszy.
         Po naciśnięciu przycisku moneta jest wyjmowana z danej kolumny (tryb PopOut).
@@ -247,12 +254,12 @@ class ConnectFourWindow():
             None
         """
         
-        if isinstance(self._logic, NormalRules):
-            self._current_mode.set("Standard")
-        elif isinstance(self._logic, FiveInARow):
+        if isinstance(self._logic, FiveInARow):
             self._current_mode.set("Pięć w rzędzie")
         elif isinstance(self._logic, PopOut):
             self._current_mode.set("PopOut")
+        elif isinstance(self._logic, NormalRules):
+            self._current_mode.set("Standard")
 
     def display_rules(self, event):
         """Wyświetl zasady gry.
@@ -374,7 +381,7 @@ class ConnectFourWindow():
         
         Metoda bazuje na klasie opisującej reguły gry. Wykorzystuje metody zawarte w tej klasie.
         Po kliknięciu jednego z przycisków sprawdzane są warunki konieczne do umieszczenia monety w danej kolumnie.
-        Jeżeli nie zostanie napotkany błąd wynikający z próby umieszczenia monety w zapełnionej kolumnie to do kolumny zostaje umieszczona moneta.
+        Jeżeli nie zostanie napotkany błąd wynikający z próby umieszczenia monety w zapełnionej kolumnie to do kolumny zostaje wrzucona moneta.
         Następnie sprawdzana jest potencjalna wygrana lub remis. Jeżeli nie ma wygranej ani remisu to drugi gracz dostaje możliwość wykonania ruchu.
 
         Parametry:
@@ -390,21 +397,20 @@ class ConnectFourWindow():
             self.show_alert("Pełna kolumna", e)
             return
 
-        color = "red" if checker == Checker.RED else "yellow" if checker == Checker.YELLOW else "#f8f4f4"
         space = 4
-        self.print_checker(x=44+space*y+80*y, y=44+space*x+80*x, r=40, canvas=self._board, color=color)
+        self.print_checker(x=44+space*y+80*y, y=44+space*x+80*x, r=40, canvas=self._board, color=checker.name)
         
         if win:
             self.disable_buttons()
-            self.print_end_game_info(False)
+            self.print_end_game_info(draw=False)
             if self._current_mode.get() == "PopOut":
                 self.change_buttons_property("state", DISABLED, True)
         if draw:
             self.disable_buttons()
-            self.print_end_game_info(True)
-            return True
+            self.print_end_game_info(draw=True)
 
         self.change_buttons_property("bg", self._logic.whose_turn.checker.name)
+        # ustawianie przycisków z 'X' na kolor danego gracza
         if self._current_mode.get() == "PopOut":
             curr_pop_out_image = self._pop_out_image_red if self._logic.whose_turn.checker == Checker.RED else self._pop_out_image_yellow
             self.change_buttons_property("image", curr_pop_out_image, pop_out=True)
@@ -577,17 +583,17 @@ class ConnectFourWindow():
         """
 
         if option == "Standard":
-            if self._window is not None:
-                self._window.destroy()
-            self.__init__()
+            # if self._window is not None:
+            #     self._window.destroy()
+            self.__initialize_game()
         elif option == "Pięć w rzędzie":
-            if self._window is not None:
-                self._window.destroy()
-            self.__init__(False, FiveInARow(Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW)))
+            # if self._window is not None:
+            #     self._window.destroy()
+            self.__initialize_game(False, FiveInARow(Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW)))
         elif option == "PopOut":
-            if self._window is not None:
-                self._window.destroy()
-            self.__init__(False, PopOut(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW)))
+            # if self._window is not None:
+            #     self._window.destroy()
+            self.__initialize_game(False, PopOut(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW)))
         
 
     def mainloop(self):

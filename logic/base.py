@@ -73,5 +73,9 @@ class GameRules:
         pass
 
     @abstractmethod
+    def check_draw(self):
+        pass
+
+    @abstractmethod
     def who_win(self):
         pass

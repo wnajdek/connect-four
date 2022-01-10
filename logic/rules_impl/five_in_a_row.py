@@ -1,10 +1,10 @@
-from logic.base import *
+from logic.rules_impl.normal_rules import NormalRules
 from logic.exceptions import *
 from logic.rules_impl.rules_txt import *
-import random
+from logic.objects.checker import Checker
 
-class FiveInARow(GameRules):
-    """Klasa pochodna klasy GameRules. Tryb 'Pięć w rzędzie'.
+class FiveInARow(NormalRules):
+    """Klasa pochodna klasy NormalRules. Tryb 'Pięć w rzędzie'.
     
     Klasa reprezentuje zmodyfikowane zasady gry.
     Rozmiar planszy to 6 wierszy na 9 kolumn przy czym pierwsza i ostatnia kolumna jest wypełniona automatycznie.
@@ -58,36 +58,6 @@ class FiveInARow(GameRules):
 
         self._fill_two_cols()
 
-    @property
-    def n_rows(self):
-        """Pobierz liczbę wierszy. Zwraca wartość typu int."""
-        return self._n_rows
-
-    @property
-    def n_cols(self):
-        """Pobierz liczbę kolumn. Zwraca wartość typu int."""
-        return self._n_cols
-
-    @property
-    def whose_turn(self):
-        """Pobierz gracza, którego jest teraz tura. Zwraca obiekt Player."""
-        return self._whose_turn
-    
-    @property
-    def board(self):
-        """Pobierz planszę. Zwraca dwuwymiarową listę."""
-        return self._board
-
-    @property
-    def rules_txt_header(self):
-        """Pobierz nazwę trybu. Zwraca wartośc typu str."""
-        return self._rules_txt_header
-    
-    @property
-    def rules_txt_info(self):
-        """Pobierz opis reguł. Zwraca wartośc typu str."""
-        return self._rules_txt_info
-
     def _fill_two_cols(self):
         """Wypełnij dwie skrajne kolumny.
         
@@ -103,62 +73,6 @@ class FiveInARow(GameRules):
             else:
                 self._board[i][0] = Checker.YELLOW
                 self._board[i][self._n_cols-1] = Checker.RED
-
-    def _who_start(self):
-        """Wylosuj kto zaczyna.
-        
-        Metoda decyduje kto rozpoczyna grę.
-
-        Zwraca:
-            Player: gracz który zaczyna.
-        """
-        return random.choice([self._player1, self._player2])
-
-    def drop_checker(self, col):
-        """Dodaj monetę do planszy.
-        
-        Metoda sprawdza czy wrzucenie monety do danej kolumny jest możliwe. 
-        Jeżeli kolumna jest pełna to wystąpi wyjątek ColumnIsFullException z odpowiednim komunikatem.
-        Jeżeli kolumna nie jest pełna to moneta dodawana jest do planszy.
-
-        Parametry:
-            col (int): numer kolumny do której gracz chce wrzucić monetę
-        
-        Zwrace:
-            tuple: (jaka_moneta (Checker), jaki_wiersz (int), jaka_kolumna (int), wygrana (bool), remis (bool))
-        """
-
-        free_row = -1
-        for i, spot in enumerate(reversed(self._board)):
-            if spot[col] is None:
-                free_row = self._n_rows - i - 1
-                break
-        else:
-            raise ColumnIsFullException("Kolumna jest pełna. Wybierz inną kolumnę.")
-        
-        self._board[free_row][col] = self._whose_turn.checker
-        self._n_moves += 1
-
-        tmp_checker = self._whose_turn.checker
-
-        if self.check_win():
-            return (tmp_checker, free_row, col, True, False)
-        elif self.check_draw():
-            return (tmp_checker, free_row, col, False, True)
-        else:
-            self.change_player()
-            return (tmp_checker, free_row, col, False, False)  # zwraca tuple (jaka_moneta, jaki_wiersz, jaka_kolumna, wygrana, remis)
-
-    def change_player(self):
-        """Zmień na drugiego gracza.
-        
-        Metoda powoduje, że prawo ruchu przechodzi na drugiego gracza.
-
-        Zwraca:
-            Player: gracz, który dostał prawo wykonania ruchu.
-        """
-        self._whose_turn = self._player1 if self._whose_turn == self._player2 else self._player2
-        return self._whose_turn
 
     def check_win(self):
         """Sprawdź wygraną.
@@ -212,10 +126,3 @@ class FiveInARow(GameRules):
         """
         return self._n_moves == 42
 
-    def who_win(self):
-        """Kto wygrał.
-        
-        Zwraca:
-            Player: Zwraca gracza, który wygrał.
-        """
-        return self._winner

@@ -22,4 +22,4 @@ POP_OUT_INFO = """
 3. Gracz wrzuca monetę do danej kolumny. Moneta zostaje umieszczona w pierwszym wolnym wierszu (licząc od dołu) danej kolumny.
 4. Gracz ma możliwość usunięcia swojej monety z dolnego rzędu. Do wyjmowania monet gracz korzysta z przycisków ze znakiem 'X'.
 4. Wygrywa gracz, który ułoży 4 monety w rzędzie (pionowo, poziomo lub po skosie).
-5. Jeżeli cała plansza zostanie zapełniona i żaden z graczy nie ułoży 4 monety w rzędzie to gra kończy się remisem."""
+5. Jeżeli cała plansza zostanie zapełniona to gra toczy się dalej, ponieważ gracze nadal mogą usuwać swoje monety"""

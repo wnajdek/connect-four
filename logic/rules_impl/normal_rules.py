@@ -49,9 +49,6 @@ class NormalRules(GameRules):
             n_cols (int): liczba kolumn planszy
             player1 (Player): gracz pierwszy
             player2 (Player): gracz drugi
-
-        Zwraca:
-            Obiekt klasy NormalRules
         """
         super().__init__(n_rows, n_cols, player1, player2)
         self._whose_turn = self._who_start()
