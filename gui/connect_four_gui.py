@@ -34,7 +34,7 @@ class ConnectFourWindow():
         _pop_out_image_red (PIL.ImageTk.PhotoImage): czerowny znak 'X' dla przycisków wyjmowania
         _pop_out_image_yellow (PIL.ImageTk.PhotoImage): żółty znak 'X' dla przycisków wyjmowania
 
-    Metody:
+    Metody: 
         set_current_mode(): Ustaw aktywny tryb dla listy rozwijanej.
         display_rules(event): Wyświetl zasady gry.
         hide_rules(event): Schowaj zasady gry.
@@ -78,6 +78,13 @@ class ConnectFourWindow():
 
         Na początku ustalany jest tryb w jakim rozpocznie się gra.
         Tworzone jest okno gry i umieszczane w nim są wszystkie obiekty konieczne do rozpoczęcia rozgrywki.
+
+        Parametry:
+            default (bool): czy gra ma zostać uruchomiona w trybie Normalnym
+            logic (GameRules): obiekt z zasadami gry
+
+        Zwraca:
+            None
         """
         if default:
             self._logic = NormalRules(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW))
@@ -217,8 +224,6 @@ class ConnectFourWindow():
             button.bind('<Enter>',  self.on_buttons_row_enter)
             button.bind('<Leave>',  self.on_buttons_row_leave)
         
-        
-
         return buttons_row
 
     def __create_board(self):
@@ -375,7 +380,7 @@ class ConnectFourWindow():
             canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#cc0000", width=0)
         elif color.lower() == "yellow":
             canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#eded00", width=0)
-
+    
     def drop_checker(self, col):
         """Upuść monetę.
         
@@ -383,10 +388,8 @@ class ConnectFourWindow():
         Po kliknięciu jednego z przycisków sprawdzane są warunki konieczne do umieszczenia monety w danej kolumnie.
         Jeżeli nie zostanie napotkany błąd wynikający z próby umieszczenia monety w zapełnionej kolumnie to do kolumny zostaje wrzucona moneta.
         Następnie sprawdzana jest potencjalna wygrana lub remis. Jeżeli nie ma wygranej ani remisu to drugi gracz dostaje możliwość wykonania ruchu.
-
         Parametry:
             col (int): indeks kolumny, do której ma zostać wrzucona moneta (0 to pierwsza kolumna od lewej).
-
         Zwraca:
             None
         """
@@ -403,11 +406,14 @@ class ConnectFourWindow():
         if win:
             self.disable_buttons()
             self.print_end_game_info(draw=False)
+            self.change_buttons_property("text", "🏆")
             if self._current_mode.get() == "PopOut":
                 self.change_buttons_property("state", DISABLED, True)
         if draw:
             self.disable_buttons()
             self.print_end_game_info(draw=True)
+            self.change_buttons_property("bg", "black")
+            self.change_buttons_property("text", "🤝")
 
         self.change_buttons_property("bg", self._logic.whose_turn.checker.name)
         # ustawianie przycisków z 'X' na kolor danego gracza
@@ -447,6 +453,7 @@ class ConnectFourWindow():
         if win:
             self.disable_buttons()
             self.print_end_game_info(False)
+            self.change_buttons_property("text", "🏆")
             if self._current_mode.get() == "PopOut":
                 self.change_buttons_property("state", DISABLED, True)
         
@@ -517,13 +524,16 @@ class ConnectFourWindow():
         self.change_buttons_property("state", DISABLED)
         self.unbind_buttons_event("<Enter>")
         self.unbind_buttons_event("<Leave>")
-        self.change_buttons_property("image", self._buttons_row_image_HOVER)
+        self.change_buttons_property("image", "")
+        self.change_buttons_property("cursor", "")
+        self.change_buttons_property("disabledforeground", "black")
+        self.change_buttons_property("font", ('Roboto 34 bold'))
 
     def change_buttons_property(self, property, value, pop_out=False):
         """Zmień jedną cechę przycisków.
         
         Metoda zmienia jedną cechę (np. image, bg) dla wszystkich przycisków odpowiedzialnych za umieszczanie monet na planszy
-        lub gdy pop_out=True to zmiana będzie wykonywana przyciskach wyjmowania monet w trybie PopOut.
+        lub gdy pop_out=True to zmiana będzie wykonywana na przyciskach wyjmowania monet w trybie PopOut.
 
         Parametry:
             property (str): nazwa parametru do modyfikacji.

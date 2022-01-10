@@ -14,7 +14,15 @@ class TestNormalMode(unittest.TestCase):
     def test_one(self):
         """Test sprawdza czy po wykonaniu dwóch ruchów przez każdego z graczy spowoduje,
         że monety spadają na dół pola gry lub zatrzymują się na już wrzuconym żetonie."""
-
+        # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
+        # układam:
+        #   0 1 2 3 4 5 6
+        # 0
+        # 1
+        # 2 O      
+        # 3 X   
+        # 4 O  
+        # 5 X 
         checker = self.logic.whose_turn.checker
         for _ in range(4):
             self.logic.drop_checker(0)
@@ -24,11 +32,19 @@ class TestNormalMode(unittest.TestCase):
         board2[4][0] = Checker.YELLOW if checker != Checker.YELLOW else Checker.RED
         board2[3][0] = checker
         board2[2][0] = Checker.YELLOW if checker != Checker.YELLOW else Checker.RED
-        self.assertListEqual(self.logic.board, board2)
+        self.assertListEqual(self.logic.board, board2)  # czy plansze są takie same
             
     def test_two(self):
         """Test sprawdzający czy ułożenie pionowej linii przez pierwszego gracza zwróci informację o wygranej."""
-        
+        # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
+        # układam:
+        #   0 1 2 3 4 5 6
+        # 0
+        # 1
+        # 2   X     
+        # 3   X O
+        # 4   X O 
+        # 5   X O
         who_start = self.player1
         self.logic._whose_turn = who_start
         for _ in range(3):
@@ -42,7 +58,15 @@ class TestNormalMode(unittest.TestCase):
 
     def test_three(self):
         """Test sprawdzający czy ułożenie poziomej linii przez drugiego gracza zwróci informację o wygranej."""
-        
+        # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
+        # układam:
+        #   0 1 2 3 4 5 6
+        # 0
+        # 1
+        # 2        
+        # 3    
+        # 4 O O O  
+        # 5 X X X X
         who_start = self.player2
         self.logic._whose_turn = who_start
         for i in range(3):
@@ -58,7 +82,6 @@ class TestNormalMode(unittest.TestCase):
         """Test sprawdzający czy ułożenie poziomej lini przez jednego z graczy zwróci informację o wygranej."""
 
         # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
-        who_start = self.logic.whose_turn
         # układam:
         #   0 1 2 3 4 5 6
         # 0
@@ -67,7 +90,7 @@ class TestNormalMode(unittest.TestCase):
         # 3   O X O
         # 4   X X X
         # 5 X O O O
-
+        who_start = self.logic.whose_turn
         self.logic.drop_checker(0) # X (5, 0)
         self.logic.drop_checker(1) # O (5, 1)
         self.logic.drop_checker(1) # X (4, 1)
@@ -148,7 +171,15 @@ class TestNormalMode(unittest.TestCase):
 
     def test_seven(self):
         """Test sprawdzający czy wrzucenie monety do zapełnionej kolumny zwróci wyjątek."""
-
+        # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
+        # układam: (jest to stan przed próbą wrzucenia monety do pełnej kolumny)
+        #   0 1 2 3 4 5 6
+        # 0           O
+        # 1           X
+        # 2           O
+        # 3           X
+        # 4           O  
+        # 5           X
         for _ in range(6):
             self.logic.drop_checker(5)  # zapełniam kolumnę o indeksie 5 (szósta kolumna on lewej)
         self.assertRaises(ColumnIsFullException, self.logic.drop_checker, 5)  # próba wrzucenia monety do pełnej kolumny, oczekiwany wyjątek

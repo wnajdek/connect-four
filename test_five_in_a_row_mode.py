@@ -16,6 +16,16 @@ class TestFiveInARow(unittest.TestCase):
         """Test sprawdza czy po wykonaniu dwóch ruchów przez każdego z graczy spowoduje,
         że monety spadają na dół pola gry lub zatrzymują się na już wrzuconym żetonie."""
 
+        # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
+        # c - moneta czerwona, ż - moneta żółta
+        # układam:
+        #   0 1 2 3 4 5 6 7 8
+        # 0 ż               c
+        # 1 c               ż
+        # 2 ż   O           c
+        # 3 c   X           ż
+        # 4 ż   O           c
+        # 5 c   X           ż
         checker = self.logic.whose_turn.checker
         for _ in range(4):
             self.logic.drop_checker(2)
@@ -32,11 +42,21 @@ class TestFiveInARow(unittest.TestCase):
         board2[4][2] = Checker.YELLOW if checker != Checker.YELLOW else Checker.RED
         board2[3][2] = checker
         board2[2][2] = Checker.YELLOW if checker != Checker.YELLOW else Checker.RED
-        self.assertListEqual(self.logic.board, board2)
+        self.assertListEqual(self.logic.board, board2)  # czy plansze sa takie same
             
     def test_two(self):
         """Test sprawdzający czy ułożenie pionowej linii przez pierwszego gracza zwróci informację o wygranej."""
         
+        # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
+        # c - moneta czerwona, ż - moneta żółta
+        # układam:
+        #   0 1 2 3 4 5 6 7 8
+        # 0 ż               c
+        # 1 c X             ż
+        # 2 ż X O           c
+        # 3 c X O           ż
+        # 4 ż X O           c
+        # 5 c X O           ż
         who_start = self.player1
         self.logic._whose_turn = who_start
         for _ in range(4):
@@ -51,6 +71,16 @@ class TestFiveInARow(unittest.TestCase):
     def test_three(self):
         """Test sprawdzający czy ułożenie poziomej linii przez drugiego gracza zwróci informację o wygranej."""
         
+        # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
+        # c - moneta czerwona, ż - moneta żółta
+        # układam:
+        #   0 1 2 3 4 5 6 7 8
+        # 0 ż               c
+        # 1 c               ż
+        # 2 ż               c
+        # 3 c               ż
+        # 4 ż   O O O O     c
+        # 5 c   X X X X X   ż
         who_start = self.player2
         self.logic._whose_turn = who_start
         for i in range(2, 6):
