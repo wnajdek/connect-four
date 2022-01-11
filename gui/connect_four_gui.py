@@ -103,7 +103,7 @@ class ConnectFourWindow():
         self._header = self.__create_header()
         # przyciski do planszy
         self._buttons_row = self.__create_buttons()
-        
+
         # modyfikacja wielkości okna na podstawie wielkości planszy do gry
         width = self._board.winfo_width()
         height = self._board.winfo_height() + 230
@@ -121,11 +121,16 @@ class ConnectFourWindow():
         
         if self._current_mode.get() == "PopOut":
             self.__create_pop_out_buttons()
+        # blokuję dwa skrajne przyciski dla trybu Pięć w rzędzie
+        if self._current_mode.get() == "Pięć w rzędzie":
+            self.disable_buttons([0, 8])
+            self.change_buttons_property("text", "", [0, 8])
+            self.change_buttons_property("background", "black", [0, 8])
 
     def __create_header(self):
         """Utwórz panel górny gry.
         
-        Metoda odpowiedzialna za tworzenie pola kogo tura, przycisku reset oraz listy rozwijanej do wyboru trybów.
+        Metoda odpowiedzialna za tworzenie pola kogo tura (_lbl_whose_turn), przycisku reset (_btn_reset) oraz listy rozwijanej do wyboru trybów (_mode_list).
         
         Zwraca:
             tk.Frame: zwraca ramkę, w której znajdują się wyżej wymienione rzeczy.
@@ -154,7 +159,8 @@ class ConnectFourWindow():
         self._mode_list = tk.OptionMenu(header, self._current_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.reset)
         self._arrow_image = ImageTk.PhotoImage(Image.open("gui/img/arrow.png"))
         self._mode_list.configure(font=('Roboto 10 bold'),
-                                  bg="brown", fg="white",
+                                  bg="brown",
+                                  fg="white",
                                   activebackground="brown",
                                   highlightbackground="black",
                                   indicatoron=0,
@@ -163,6 +169,11 @@ class ConnectFourWindow():
                                   cursor="hand1")
         self.set_current_mode()
         self._mode_list.place(in_= header, x=self._board.winfo_width(), y=5, anchor="ne", width=150, height=50)
+        # ustawiam style dla opcji na liście rozwijanej
+        self._mode_list['menu'].configure(font=('Roboto 10 bold'),
+                                          bg="brown",
+                                          fg="white",
+                                          activebackground="#7d1f1f")
 
         return header
     
@@ -379,7 +390,7 @@ class ConnectFourWindow():
         if color.lower() == "red":
             canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#cc0000", width=0)
         elif color.lower() == "yellow":
-            canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#eded00", width=0)
+            canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#dede00", width=0)
     
     def drop_checker(self, col):
         """Upuść monetę.
@@ -408,7 +419,7 @@ class ConnectFourWindow():
             self.print_end_game_info(draw=False)
             self.change_buttons_property("text", "🏆")
             if self._current_mode.get() == "PopOut":
-                self.change_buttons_property("state", DISABLED, True)
+                self.change_buttons_property("state", DISABLED, pop_out=True)
         if draw:
             self.disable_buttons()
             self.print_end_game_info(draw=True)
@@ -455,7 +466,7 @@ class ConnectFourWindow():
             self.print_end_game_info(False)
             self.change_buttons_property("text", "🏆")
             if self._current_mode.get() == "PopOut":
-                self.change_buttons_property("state", DISABLED, True)
+                self.change_buttons_property("state", DISABLED, pop_out=True)
         
         self.change_buttons_property("bg", self._logic.whose_turn.checker.name)
         self.change_whose_turn_lbl()
@@ -476,7 +487,8 @@ class ConnectFourWindow():
         """
 
         alert = tk.Toplevel(self._window)
-        alert.geometry("600x250+%d+%d" % (self._screen_width/2 - 600/2, self._screen_height/2 - 700/2))
+        #alert.geometry("600x250+%d+%d" % (self._screen_width/2 - 600/2, self._screen_height/2 - 700/2))
+        alert.geometry("600x250+%d+%d" % (self._window.winfo_x(), self._window.winfo_y()))
         if draw:
             alert.title("Remis")
             lbl_header_text = tk.Label(alert, text= f"REMIS", font=('Roboto 34 bold'))
@@ -511,25 +523,27 @@ class ConnectFourWindow():
 
         self._lbl_whose_turn["text"] = "Tura gracza 1" if self._logic.whose_turn.checker == Checker.RED else "Tura gracza 2"
 
-    def disable_buttons(self):
+    def disable_buttons(self, button_numbers: list = None):
         """Wyłącz przyciski.
         
         Metoda wyłącza działanie przycisków odpowiedzialnych za umieszczanie monet na planszy. Stan przycisku zostaje ustawiony na DISABLED.
         Wyłączane zostają również zdarzenia wykrywane przy najechaniu i zjechaniu kursorem z przycisku.
 
+        Parametry:
+            button_numbers (list): podawane są dokładne numery przycisków (wartości int), dla których ma zajść zmiana. Przy podaniu None wykona się na wszystkich przyciskach w rzędzie.
         Zwraca:
             None
         """
 
-        self.change_buttons_property("state", DISABLED)
-        self.unbind_buttons_event("<Enter>")
-        self.unbind_buttons_event("<Leave>")
-        self.change_buttons_property("image", "")
-        self.change_buttons_property("cursor", "")
-        self.change_buttons_property("disabledforeground", "black")
-        self.change_buttons_property("font", ('Roboto 34 bold'))
+        self.change_buttons_property("state", DISABLED, button_numbers)
+        self.unbind_buttons_event("<Enter>", button_numbers)
+        self.unbind_buttons_event("<Leave>", button_numbers)
+        self.change_buttons_property("image", "", button_numbers)
+        self.change_buttons_property("cursor", "", button_numbers)
+        self.change_buttons_property("disabledforeground", "black", button_numbers)
+        self.change_buttons_property("font", ('Roboto 34 bold'), button_numbers)
 
-    def change_buttons_property(self, property, value, pop_out=False):
+    def change_buttons_property(self, property, value, button_numbers: list = None, pop_out=False):
         """Zmień jedną cechę przycisków.
         
         Metoda zmienia jedną cechę (np. image, bg) dla wszystkich przycisków odpowiedzialnych za umieszczanie monet na planszy
@@ -538,6 +552,7 @@ class ConnectFourWindow():
         Parametry:
             property (str): nazwa parametru do modyfikacji.
             value (?): wartość jaka ma być przypisana do danego parametru. Typ wartości jest zależny od tego jaki parametr jest ustawiany.
+            button_numbers (list): podawane są dokładne numery przycisków (wartości int), dla których ma zajść zmiana. Przy podaniu None wykona się na wszystkich przyciskach w rzędzie.
             pop_out (bool): czy dla przycisków wyjmowania monet
         Zwraca:
             None
@@ -548,26 +563,34 @@ class ConnectFourWindow():
         else:
             buttons_row_children = self._pop_out_buttons_row.winfo_children()
 
-        for i in range(len(buttons_row_children)):
-            buttons_row_children[i][property] = value
+        if button_numbers is None:
+            for i in range(len(buttons_row_children)):
+                buttons_row_children[i][property] = value
+        else:
+            for i in button_numbers:
+                buttons_row_children[i][property] = value
 
-    def unbind_buttons_event(self, event_type):
+    def unbind_buttons_event(self, event_type, button_numbers: list = None):
         """Usuwanie obsługi zdarzenia przez przyciski.
         
         Metoda usuwająca obsługę zdarzenia dla wszystkich przycisków odpowiedzialnych za umieszczanie monet na planszy.
 
         Parametry:
             event_type (str): nazwa zdarzenia, które nie będzie już obsługiwane.
-
+            button_numbers (list): podawane są dokładne numery przycisków (wartości int), dla których ma zajść zmiana. Przy podaniu None wykona się na wszystkich przyciskach w rzędzie.
         Zwraca:
             None
         """
         buttons_row_children = self._buttons_row.winfo_children()
-        for i in range(len(buttons_row_children)):
-            buttons_row_children[i].bind(event_type, "")
+        if button_numbers is None:
+            for i in range(len(buttons_row_children)):
+                buttons_row_children[i].bind(event_type, "")
+        else:
+            for i in button_numbers:
+                buttons_row_children[i].bind(event_type, "")
 
     def show_alert(self, title, msg):
-        """Wyświetl informację o pełnej kolumnie.
+        """Wyświetl informację o niepoprawnej akcji użytkownika.
         
         Na ekranie zostaje wyświetlone okno, w którym zostaje wyświetlony dany komunikat.
 

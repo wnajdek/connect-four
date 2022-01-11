@@ -197,6 +197,7 @@ class TestFiveInARow(unittest.TestCase):
             self.logic.drop_checker(5)  # zapełniam kolumnę o indeksie 5 (szósta kolumna on lewej)
         self.assertRaises(ColumnIsFullException, self.logic.drop_checker, 5)  # próba wrzucenia monety do pełnej kolumny, oczekiwany wyjątek
         self.assertRaises(ColumnIsFullException, self.logic.drop_checker, 8)  # próba wrzucenia monety do pełnej kolumny, która była wypełniana automatycznie na poczatku gry
+                                                                              # w wersji graficznej nie przycisków nad kolumnami wypełnionymi automatycznie
 
 if __name__ == "__main__":
     unittest.main()
