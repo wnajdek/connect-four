@@ -34,6 +34,7 @@ class PopOut(NormalRules):
     Metody:
         _who_start(): kto rozpoczyna grę
         drop_checker(col): umieść monetę na planszy
+        remove_checker(col): usuń monetę z planszy
         change_player(): daj prawo ruchu drugiemu graczowi
         check_win(): sprawdź wygraną
         check_draw(): sprawdź remis
@@ -55,8 +56,8 @@ class PopOut(NormalRules):
         super().__init__(n_rows, n_cols, player1, player2)
         self._whose_turn = self._who_start()
         self._n_moves = 0
-        self._rules_txt_header = POP_OUT_HEADER
-        self._rules_txt_info = POP_OUT_INFO
+        self._rules_txt_header = POP_OUT_HEADER  # z pliku rules_txt.py
+        self._rules_txt_info = POP_OUT_INFO  # z pliku rules_txt.py
 
     def remove_checker(self, col):
         """Usuń monetę z planszy.
@@ -64,6 +65,7 @@ class PopOut(NormalRules):
         Metoda sprawdza czy gracz, który ma teraz prawo ruchu, może usunąć monetę w danej kolumnie.
         Jeżeli może to moneta na samym dole danej kolumny jest usuwana, a pozostałe monety są przesuwane o 1 w dół.
         Jeżeli gracz nie może usunąć monety to wystąpi wyjątek CheckerCannotBeRemovedException z odpowiednim komunikatem.
+        Na końcu następuje sprawdzenie czy któryś z graczy wygrał.
 
         Parametry:
             col (int): numer kolumny z której usuwana jest moneta.

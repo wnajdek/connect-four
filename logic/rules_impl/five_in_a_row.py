@@ -53,8 +53,8 @@ class FiveInARow(NormalRules):
         super().__init__(6, 9, player1, player2)
         self._whose_turn = self._who_start()
         self._n_moves = 0
-        self._rules_txt_header = FIVE_IN_A_ROW_HEADER
-        self._rules_txt_info = FIVE_IN_A_ROW_INFO
+        self._rules_txt_header = FIVE_IN_A_ROW_HEADER  # z pliku rules_txt.py
+        self._rules_txt_info = FIVE_IN_A_ROW_INFO  # z pliku rules_txt.py
 
         self._fill_two_cols()
 

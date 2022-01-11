@@ -53,8 +53,8 @@ class NormalRules(GameRules):
         super().__init__(n_rows, n_cols, player1, player2)
         self._whose_turn = self._who_start()
         self._n_moves = 0
-        self._rules_txt_header = NORMAL_RULES_HEADER
-        self._rules_txt_info = NORMAL_RULES_INFO
+        self._rules_txt_header = NORMAL_RULES_HEADER  # z pliku rules_txt.py
+        self._rules_txt_info = NORMAL_RULES_INFO  # z pliku rules_txt.py
 
     @property
     def n_rows(self):
@@ -101,7 +101,8 @@ class NormalRules(GameRules):
         
         Metoda sprawdza czy wrzucenie monety do danej kolumny jest możliwe. 
         Jeżeli kolumna jest pełna to wystąpi wyjątek ColumnIsFullException z odpowiednim komunikatem.
-        Jeżeli kolumna nie jest pełna to moneta dodawana jest do planszy.
+        Jeżeli kolumna nie jest pełna to moneta dodawana jest do planszy (self._board).
+        Sprawdzana jest możliwa wygrana lub remis.
 
         Parametry:
             col (int): numer kolumny do której gracz chce wrzucić monetę
@@ -163,6 +164,7 @@ class NormalRules(GameRules):
         
         # wygrana pionowo
         rows_prep = zip(*self._board)
+        # transponowanie macierzy
         transposed_board = [list(row) for row in rows_prep]
         for row in transposed_board:
             for i in range(self._n_rows-3):

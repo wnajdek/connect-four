@@ -9,7 +9,6 @@ from logic.rules_impl.pop_out import PopOut
 from logic.objects.checker import Checker
 from logic.objects.player import Player
 
-
 class ConnectFourWindow():
     """Klasa dodająca interfejs graficzny.
     
@@ -19,6 +18,7 @@ class ConnectFourWindow():
         _screen_width (int): szerokość ekranu
         _screen_height (int): wysokość ekranu
         _board (tk.Canvas): plansza do gry
+        _checkers_map (list): przechowuje id monet na planszy _board
         _header (tk.Frame): ramka na górze aplikacji zawierająca przycisk reset, informację kogo tura i listę rozwijaną
         _buttons_row (tk.Frame): ramka z przyciskami do wrzucania monet
         _lbl_mode_rules (tk.Label): po najechaniu na ten widget wyświetlane są zasady gry
@@ -33,6 +33,7 @@ class ConnectFourWindow():
         _pop_out_buttons_row (tk.Frame): rząd przycisków do wyjmowania monet (tryb PopOut)
         _pop_out_image_red (PIL.ImageTk.PhotoImage): czerowny znak 'X' dla przycisków wyjmowania
         _pop_out_image_yellow (PIL.ImageTk.PhotoImage): żółty znak 'X' dla przycisków wyjmowania
+        _checker_dropped (tk.BooleanVar): czy moneta już spadła (informacja potrzebna do opóźnienia wyświetlenia komunikatu o wygranej)
 
     Metody: 
         set_current_mode(): Ustaw aktywny tryb dla listy rozwijanej.
@@ -40,15 +41,16 @@ class ConnectFourWindow():
         hide_rules(event): Schowaj zasady gry.
         resize_image(source, width, height): Zmień rozmiar obrazu.
         on_buttons_row_enter(event): Zmień obraz po najechaniu na przycisk.
-        on_buttons_row_leave(event): Zmien obraz po zjechaniu z przycisku.
+        on_buttons_row_leave(event): Zmień obraz po zjechaniu z przycisku.
+        move_checker(curr_checker, curr_y, end_y, speed=16): Przesuń monetę w dół z pozycji curr_y do end_y.
         print_checker(x, y, r, canvas, color="#f8f4f4"): Rysuj monetę.
         drop_checker(col): Upuść monetę po naciśnięciu przycisku.
         remove_checker(col): Wyjmij monetę.
         print_end_game_info(draw: bool): Wyświetl informacje końcowe.
         change_whose_turn_lbl(): Zmień informację kogo jest tura.
-        disable_buttons(): Wyłącz możliwość wciskania przycisków do wrzucania monet.
-        change_buttons_property(property, value): Zmień jedną cechę przycisków do wrzucania monet.
-        unbind_buttons_event(event_type): Usuń obsługę zdarzenia przez przyciski do wrzucania monet.
+        disable_buttons(button_numbers: list = None): Wyłącz możliwość wciskania przycisków do wrzucania monet.
+        change_buttons_property(property, value, button_numbers: list = None, pop_out=False): Zmień jedną cechę przycisków do wrzucania lub usuwania monet.
+        unbind_buttons_event(event_type, button_numbers: list = None): Usuń obsługę zdarzenia przez przyciski do wrzucania monet.
         show_alert(title, msg): Wyświetl komunikat.
         reset(option): Resetuj grę w danym trybie.
         mainloop(): Uruchom pętlę zdarzeń.
@@ -64,7 +66,7 @@ class ConnectFourWindow():
             default (bool): czy gra ma zostać uruchomiona w trybie Normalnym
             logic (GameRules): obiekt z zasadami gry
         """
-
+        
         # tworzenie okna aplikacji
         self._window = tk.Tk()
         self._window.title("Cztery w rzędzie")
@@ -78,6 +80,8 @@ class ConnectFourWindow():
 
         Na początku ustalany jest tryb w jakim rozpocznie się gra.
         Tworzone jest okno gry i umieszczane w nim są wszystkie obiekty konieczne do rozpoczęcia rozgrywki.
+        Jeżeli zmienna default jest True to gra uruchomi się ze standardowymi regułami (niezależnie od tego czy podany zostanie parametr logic).
+        Aby przekazać obiekt z innymi zasadami, parametr default musi zostać ustawiony na False.
 
         Parametry:
             default (bool): czy gra ma zostać uruchomiona w trybie Normalnym
@@ -121,11 +125,13 @@ class ConnectFourWindow():
         
         if self._current_mode.get() == "PopOut":
             self.__create_pop_out_buttons()
+
         # blokuję dwa skrajne przyciski dla trybu Pięć w rzędzie
         if self._current_mode.get() == "Pięć w rzędzie":
             self.disable_buttons([0, 8])
             self.change_buttons_property("text", "", [0, 8])
-            self.change_buttons_property("background", "black", [0, 8])
+        
+        self._checker_dropped = tk.BooleanVar()
 
     def __create_header(self):
         """Utwórz panel górny gry.
@@ -139,6 +145,7 @@ class ConnectFourWindow():
         header = tk.Frame(self._window, bg="black")
         header.place(x=0, y=0, height=180, width=self._board.winfo_width())
 
+        # przycisk reset
         self._btn_reset = tk.Button(master=header, 
                                     bg="blue", text="RESET\nGRY", 
                                     command=lambda: self.reset(self._current_mode.get()), 
@@ -147,6 +154,7 @@ class ConnectFourWindow():
                                     cursor="hand2")
         self._btn_reset.place(in_= header, x=80, rely=0.5, anchor="center", width=100, height=50)
 
+        # pole kogo tura
         self._lbl_whose_turn = tk.Label(text = "",
                                         master=header,
                                         foreground = "white",
@@ -155,6 +163,7 @@ class ConnectFourWindow():
         self.change_whose_turn_lbl()
         self._lbl_whose_turn.place(in_= header, relx=0.5, rely=0.5, anchor="center", width=150, height=150)
         
+        # lista rozwijana
         self._current_mode = tk.StringVar(header)
         self._mode_list = tk.OptionMenu(header, self._current_mode, "Standard", "Pięć w rzędzie", "PopOut", command=self.reset)
         self._arrow_image = ImageTk.PhotoImage(Image.open("gui/img/arrow.png"))
@@ -187,7 +196,7 @@ class ConnectFourWindow():
             None
         """
         self._pop_out_buttons_row = tk.Frame(self._window, borderwidth=0, bg="black")
-        self._pop_out_buttons_row.place(x=0, y=130, width=4*(self._logic._n_cols+1)+80*self._logic._n_cols, height=50)
+        self._pop_out_buttons_row.place(x=0, y=130, width=80*self._logic._n_cols, height=50)
         
         self._pop_out_image_yellow = ImageTk.PhotoImage(Image.open("gui/img/x-mark-yellow.png"))
         self._pop_out_image_red = ImageTk.PhotoImage(Image.open("gui/img/x-mark-red.png"))
@@ -204,7 +213,7 @@ class ConnectFourWindow():
                             highlightthickness=1,
                             relief='flat',
                             cursor="X_cursor")
-            button.place(in_= self._pop_out_buttons_row, x=i*84, width=88, height=50)
+            button.place(in_= self._pop_out_buttons_row, x=i*80, width=80, height=50)
 
     def __create_buttons(self):
         """Utwórz rząd przycisków.
@@ -217,8 +226,9 @@ class ConnectFourWindow():
         """
         
         buttons_row = tk.Frame(self._window, borderwidth=0, bg="black")
-        buttons_row.place(x=0, y=180, width=4*(self._logic._n_cols+1)+80*self._logic._n_cols, height=50)
+        buttons_row.place(x=0, y=180, width=80*self._logic._n_cols, height=50)
 
+        # obraz z dopiskiem HOVER pojawia się w momencie najechania na przycisk, po zjechaniu powraca obraz bez HOVER
         self._buttons_row_image = self.resize_image("gui/img/circle_black.png", 30, 30)
         self._buttons_row_image_HOVER = self.resize_image("gui/img/circle.png", 30, 30)
         for i in range(self._logic._n_cols):
@@ -231,7 +241,7 @@ class ConnectFourWindow():
                                highlightthickness=1,
                                relief='flat',
                                cursor="sb_down_arrow")
-            button.place(in_= buttons_row, x=i*84, width=88, height=50)
+            button.place(in_= buttons_row, x=i*80, width=80, height=50)
             button.bind('<Enter>',  self.on_buttons_row_enter)
             button.bind('<Leave>',  self.on_buttons_row_leave)
         
@@ -241,23 +251,28 @@ class ConnectFourWindow():
         """Utwórz planszę do gry.
         
         Metoda odpowiedzialna za tworzenie planszy i wypełnianie jej monetami (przed rozpoczęciem rozgrywki), jeżeli wymaga tego tryb (np. "Pięć w rzędzie"). 
-        
+        Tworzona jest tutaj również zmienna self._checkers_map, która przechowuje id monet na planszy self._board.
+
         Zwraca:
             tk.Canvas: zwraca planszę, jako obiekt tk.Canvas.
         """
 
-        space = 4
         board = tk.Canvas(self._window,
-                          bg="blue",
-                          width=space*(self._logic._n_cols+1)+80*self._logic._n_cols,
-                          height=space*(self._logic._n_rows+1)+80*self._logic._n_rows,
+                          width=80*self._logic._n_cols,
+                          height=80*self._logic._n_rows,
                           highlightthickness=0)
         board.place(x=0, y=230)
         
+        # obraz pola na monetę
+        self.img_box = self.resize_image("gui/img/checker2.png", 81, 81)
+
+        self._checkers_map = [[None for _ in range(self._logic._n_cols)] for _ in range(self._logic._n_rows)]
         for i in range(self._logic._n_rows):
             for j in range(self._logic._n_cols):
                 color = self._logic.board[-i-1][-j-1].name if self._logic.board[-i-1][-j-1] is not None else "#f8f4f4"
-                self.print_checker(x=44+space*j+80*j, y=44+space*i+80*i, r=40, canvas=board, color=color)
+                board.create_image(40+80*j, 40+80*i, image=self.img_box)
+                if color.lower() in ("red", "yellow"):
+                    self._checkers_map[-i-1][-j-1] = self.print_checker(x=40+80*j, y=40+80*i, r=38, canvas=board, color=color)
 
         return board
 
@@ -370,6 +385,32 @@ class ConnectFourWindow():
         
         event.widget["image"] = self._buttons_row_image
 
+    def move_checker(self, curr_checker, curr_y, end_y, speed=16):
+        """Przesuń monetę.
+
+        Metoda wykorzystywana przy wrzucaniu i usuwaniu monet z planszy.
+        Przesuwa monetę (curr_checker) od podanego curr_y do pozycji end_y.
+        W momencie osiągnięcia oczekiwanej pozycji zmienna self._checker_dropped jest ustawiana na True.
+        Ta zmienna ma za zadanie opóźnić wyświetlenie komunikatu o wygranej w self.drop_checker() do czasu aż moneta się nie zatrzyma.
+        Parametry:
+            curr_checker (int): id obiektu na canvas
+            curr_y (int): pozycja aktualna obiektu
+            end_y (int): pozycja do której przesuwana będzie moneta
+            speed (int): prędkość, im mniejsza tym szybciej spada obiekt
+
+        Zwraca:
+            None
+        """
+        i = 0
+        if curr_y < end_y:
+            if curr_y % 40 == 0:
+                i = 1
+            self._board.move(curr_checker, 0, 10)
+            self._board.after(speed - i, self.move_checker, curr_checker, curr_y+10, end_y, speed - i)
+        else:
+            self._checker_dropped.set(True)
+    
+    
     def print_checker(self, x, y, r, canvas, color="#f8f4f4"):
         """Rysuj monetę.
         
@@ -383,14 +424,13 @@ class ConnectFourWindow():
             color (str): kolor monety
 
         Zwraca:
-            None
+            int: id narysowanego właśnie obiektu dla danego canvas
         """
+        
+        curr_checker = canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, width=0)
+        canvas.tag_lower(curr_checker) # moneta będzie wyświetlana pod planszą
 
-        canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, width=0)
-        if color.lower() == "red":
-            canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#cc0000", width=0)
-        elif color.lower() == "yellow":
-            canvas.create_oval(x - r + 8, y - r + 8, x + r - 8, y + r - 8, fill="#dede00", width=0)
+        return curr_checker
     
     def drop_checker(self, col):
         """Upuść monetę.
@@ -411,13 +451,22 @@ class ConnectFourWindow():
             self.show_alert("Pełna kolumna", e)
             return
 
-        space = 4
-        self.print_checker(x=44+space*y+80*y, y=44+space*x+80*x, r=40, canvas=self._board, color=checker.name)
-        
+        # dodawanie monety na planszę
+        # najpierw rysuję monetę za pomocą self.print_checker() i zapisuję id stworzonego obiektu do curr_checker
+        # aktualizuję macierz self._checkers_map, która przechowuje aktualny stan planszy (id obiektów na odpowiednich pozycjach)
+        # na końcu wywoływana jest metoda self.move_checker, która przesuwa monetę na ekranie
+        final_x = 40+80*y
+        end_y = 40+80*x
+        curr_checker = self.print_checker(x=final_x, y=0, r=38, canvas=self._board, color=checker.name)
+        self._checkers_map[x][y] = curr_checker
+        self._checker_dropped.set(False)
+        self.move_checker(curr_checker, 0, end_y)
+
         if win:
             self.disable_buttons()
-            self.print_end_game_info(draw=False)
             self.change_buttons_property("text", "🏆")
+            self._window.wait_variable(self._checker_dropped)  # oczekiwanie aż zwycięska moneta się zatrzyma
+            self.print_end_game_info(draw=False)
             if self._current_mode.get() == "PopOut":
                 self.change_buttons_property("state", DISABLED, pop_out=True)
         if draw:
@@ -440,8 +489,8 @@ class ConnectFourWindow():
         Po kliknięciu jednego z przycisków odpowiedzialnych za usuwanie dolnej monety z danej kolumny, 
         sprawdzana jest możliwość wyjęcia monety. Jeżeli w kolumnie nie ma monet lub moneta, którą chcemy usunąć, 
         jest przeciwnika to pojawi się komunikat o błędzie (CheckerCannotBeRemovedException).
-        W wypadku poprawnego wyjęcia monety sprawdzana jest możliwośc wygranej jednego z zawodników lub remisu.
-        Jeżeli nie ma wygranej ani remisu to prawo ruchu przechodzi na drugiego gracza.
+        W zmienej win przechowywana jest informacja czy ktoś wygrał.
+        Jeżeli nie ma wygranej zmieniane są obrazy przycisków i kolor przycisków na kolor gracza, który będzie wykonywał ruch.
 
         Parametry:
             col (int): indeks kolumny, z której moneta ma zostać wyjęta.
@@ -455,12 +504,22 @@ class ConnectFourWindow():
             self.show_alert("Nie można wyjąć monety", e)
             return
 
-        # przerysowywanie kolumny z której została wyjęta moneta
-        space = 4
-        for x in range(self._logic._n_rows-1, -1, -1):
-            color = "red" if self._logic.board[x][col] == Checker.RED else "yellow" if self._logic.board[x][col] == Checker.YELLOW else "#f8f4f4" 
-            self.print_checker(x=44+space*col+80*col, y=44+space*x+80*x, r=40, canvas=self._board, color=color)
-
+        # proces przesuwania monet w dół:
+        # w self._checkers_map przechowuję id monet na planszy
+        # najpierw usuwam monetę na dole z pomocą self._board.delete (Canvas, moneta zniknie z ekranu), następnie dla wyższych wierszy zastępuje akualne id w self._checkers_map wartościami id z wiersza o 1 wyżej
+        # dla wiersza, który nie ma nad sobą żadnej monety ustawiana jest wartość None w self._checkers_map
+        self._board.delete(self._checkers_map[self._logic._n_rows-1][col])
+        self._checkers_map[self._logic._n_rows-1][col] = self._checkers_map[self._logic._n_rows-2][col]
+        for x in range(self._logic._n_rows-2, -1, -1):
+            # jeśli jest moneta w danym rzędzie i danej kolumnie to jest przesuwana o 1 w dół
+            if self._checkers_map[x][col] is not None:
+                x0, y0, x1, y1 = self._board.coords(self._checkers_map[x][col])
+                self.move_checker(self._checkers_map[x][col], (y1-y0)//2, (y1-y0)//2 + 80)
+                if x != 0:
+                    self._checkers_map[x][col] = self._checkers_map[x-1][col]
+                else:
+                    self._checkers_map[x][col] = None
+        
         if win:
             self.disable_buttons()
             self.print_end_game_info(False)
@@ -487,8 +546,7 @@ class ConnectFourWindow():
         """
 
         alert = tk.Toplevel(self._window)
-        #alert.geometry("600x250+%d+%d" % (self._screen_width/2 - 600/2, self._screen_height/2 - 700/2))
-        alert.geometry("600x250+%d+%d" % (self._window.winfo_x(), self._window.winfo_y()))
+        alert.geometry("%dx250+%d+%d" % (self._window.winfo_width(), self._window.winfo_x(), self._window.winfo_y()))
         if draw:
             alert.title("Remis")
             lbl_header_text = tk.Label(alert, text= f"REMIS", font=('Roboto 34 bold'))
@@ -541,13 +599,14 @@ class ConnectFourWindow():
         self.change_buttons_property("image", "", button_numbers)
         self.change_buttons_property("cursor", "", button_numbers)
         self.change_buttons_property("disabledforeground", "black", button_numbers)
-        self.change_buttons_property("font", ('Roboto 34 bold'), button_numbers)
+        self.change_buttons_property("font", ('Roboto 18 bold'), button_numbers)
 
     def change_buttons_property(self, property, value, button_numbers: list = None, pop_out=False):
         """Zmień jedną cechę przycisków.
         
         Metoda zmienia jedną cechę (np. image, bg) dla wszystkich przycisków odpowiedzialnych za umieszczanie monet na planszy
         lub gdy pop_out=True to zmiana będzie wykonywana na przyciskach wyjmowania monet w trybie PopOut.
+        W wypadku podania argumentu button_numbers robione jest to dla konkretnych przycisków a nie dla wszystkich.
 
         Parametry:
             property (str): nazwa parametru do modyfikacji.
@@ -574,6 +633,7 @@ class ConnectFourWindow():
         """Usuwanie obsługi zdarzenia przez przyciski.
         
         Metoda usuwająca obsługę zdarzenia dla wszystkich przycisków odpowiedzialnych za umieszczanie monet na planszy.
+        W wypadku podania argumentu button_numbers usuwane jest zdarzenie dla konkretnych przycisków.
 
         Parametry:
             event_type (str): nazwa zdarzenia, które nie będzie już obsługiwane.
@@ -616,16 +676,10 @@ class ConnectFourWindow():
         """
 
         if option == "Standard":
-            # if self._window is not None:
-            #     self._window.destroy()
             self.__initialize_game()
         elif option == "Pięć w rzędzie":
-            # if self._window is not None:
-            #     self._window.destroy()
             self.__initialize_game(False, FiveInARow(Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW)))
         elif option == "PopOut":
-            # if self._window is not None:
-            #     self._window.destroy()
             self.__initialize_game(False, PopOut(6, 7, Player("Gracz 1", Checker.RED), Player("Gracz 2", Checker.YELLOW)))
         
 
