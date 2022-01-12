@@ -147,7 +147,7 @@ class TestPopOut(unittest.TestCase):
         self.assertEqual(win, False)  # nie ma zwycięzcy
 
     def test_six(self):
-        """Test prawdzający czy po ułożeniu linii dłuższej niż 4 przez jednego z graczy da informację o wygranej"""
+        """Test sprawdzający czy po ułożeniu linii dłuższej niż 4 przez jednego z graczy da informację o wygranej"""
 
         # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
         # układam:

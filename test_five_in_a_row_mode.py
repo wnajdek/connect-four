@@ -165,7 +165,7 @@ class TestFiveInARow(unittest.TestCase):
         self.assertEqual(win, False)  # nie ma zwycięzcy
 
     def test_six(self):
-        """Test prawdzający czy po ułożeniu linii dłuższej niż 5 przez pierwszego gracza (monety czerwone) da informację o wygranej"""
+        """Test sprawdzający czy po ułożeniu linii dłuższej niż 5 przez pierwszego gracza (monety czerwone) da informację o wygranej"""
 
         # c - moneta czerwona, ż - moneta żółta
         # układam:
