@@ -1,8 +1,8 @@
-from abc import abstractmethod
+import abc
 from logic.objects.checker import Checker
 from logic.objects.player import Player
 
-class GameRules:
+class GameRules(metaclass=abc.ABCMeta):
     """Klasa bazowa reguł gry
     
     Metody w tej klasie są wirtualne.
@@ -56,26 +56,26 @@ class GameRules:
     def board(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def _who_start(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def drop_checker(self, col):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def change_player(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def check_win(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def check_draw(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def who_win(self):
         pass
