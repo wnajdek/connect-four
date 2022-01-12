@@ -79,7 +79,7 @@ class TestPopOut(unittest.TestCase):
         self.assertEqual(who_start.checker, self.logic.who_win().checker)  # czy wygrał gracz 2
 
     def test_four(self):
-        """Test sprawdzający czy ułożenie poziomej lini przez jednego z graczy zwróci informację o wygranej."""
+        """Test sprawdzający czy ułożenie linii po skosie przez jednego z graczy zwróci informację o wygranej."""
 
         # 'X' oznacza gracza rozpoczynającego (może to być gracz 1 lub gracz 2), 'O' oznacza gracza, który nie rozpoczynał
         # układam:
