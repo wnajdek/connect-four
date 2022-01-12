@@ -342,7 +342,7 @@ class ConnectFourWindow():
     def resize_image(self, source, width, height):
         """Zmień rozmiar obrazu.
         
-        Metoda zmienia długość i szerokość obrazu według według podanych parametrów.
+        Metoda zmienia długość i szerokość obrazu według podanych parametrów.
 
         Parametry:
             source (str): ścieżka do obrazu.
