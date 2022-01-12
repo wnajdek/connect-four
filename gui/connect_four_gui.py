@@ -159,7 +159,7 @@ class ConnectFourWindow():
                                         master=header,
                                         foreground = "white",
                                         background = "black",
-                                        font=('Roboto 12 bold'))
+                                        font=('Roboto 16 bold'))
         self.change_whose_turn_lbl()
         self._lbl_whose_turn.place(in_= header, relx=0.5, rely=0.5, anchor="center", width=150, height=150)
         
@@ -211,9 +211,12 @@ class ConnectFourWindow():
                             text=str(i),
                             command=lambda s=i: self.remove_checker(s),
                             highlightthickness=1,
+                            activeforeground="red",
+                            activebackground="black",
                             relief='flat',
                             cursor="X_cursor")
-            button.place(in_= self._pop_out_buttons_row, x=i*80, width=80, height=50)
+            button.place(in_= self._pop_out_buttons_row, x=i*80, width=80, height=50)   
+            
 
     def __create_buttons(self):
         """Utwórz rząd przycisków.
@@ -476,6 +479,7 @@ class ConnectFourWindow():
             self.change_buttons_property("text", "🤝")
 
         self.change_buttons_property("bg", self._logic.whose_turn.checker.name)
+        self.change_buttons_property("activebackground", self._logic.whose_turn.checker.name)
         # ustawianie przycisków z 'X' na kolor danego gracza
         if self._current_mode.get() == "PopOut":
             curr_pop_out_image = self._pop_out_image_red if self._logic.whose_turn.checker == Checker.RED else self._pop_out_image_yellow
@@ -564,9 +568,11 @@ class ConnectFourWindow():
                            text="ok",
                            font=('Roboto 12 bold'),
                            bg=btn_background,
+                           activebackground=btn_background,
                            command=lambda: alert.destroy())
         if draw:
             btn_ok["bg"] = "black"
+            btn_ok["activebackground"] = "black"
             btn_ok["fg"] = "white"
         btn_ok.place(relx = 0.5, rely = 0.75, width=70, height=50, anchor="center")
 
