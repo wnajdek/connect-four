@@ -203,27 +203,27 @@ class TestPopOut(unittest.TestCase):
         #   0 1 2 3 4 5 6
         # 0           
         # 1          
-        # 2   O       
+        # 2          
         # 3   X       
         # 4   O       
-        # 5   X
+        # 5   X   O
         # teraz gracz oznaczony jako X wyciąga monetę
         # stan po wyjęciu:
         #   0 1 2 3 4 5 6
         # 0           
         # 1          
         # 2          
-        # 3   O       
+        # 3          
         # 4   X       
-        # 5   O
+        # 5   O   O
         # wrzucam monetę, aby sprawdzić w tej kolumnie dalej można dodawać poprawnie monety:
         #   0 1 2 3 4 5 6
         # 0           
         # 1          
-        # 2   O      
+        # 2         
         # 3   O       
         # 4   X       
-        # 5   O
+        # 5   O   O
         who_start = self.player1
         self.logic._whose_turn = who_start
         self.logic.drop_checker(1) 
