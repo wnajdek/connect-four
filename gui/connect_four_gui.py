@@ -263,7 +263,7 @@ class ConnectFourWindow():
         board = tk.Canvas(self._window,
                           width=80*self._logic._n_cols,
                           height=80*self._logic._n_rows,
-                          highlightthickness=0)
+                          highlightthickness=0, bg="white")
         board.place(x=0, y=230)
         
         # obraz pola na monetę
@@ -400,7 +400,6 @@ class ConnectFourWindow():
             curr_y (int): pozycja aktualna obiektu
             end_y (int): pozycja do której przesuwana będzie moneta
             speed (int): prędkość, im mniejsza tym szybciej spada obiekt
-
         Zwraca:
             None
         """
@@ -408,6 +407,7 @@ class ConnectFourWindow():
         if curr_y < end_y:
             if curr_y % 40 == 0:
                 i = 1
+            self._board.configure(bg="white")
             self._board.move(curr_checker, 0, 10)
             self._board.after(speed - i, self.move_checker, curr_checker, curr_y+10, end_y, speed - i)
         else:
