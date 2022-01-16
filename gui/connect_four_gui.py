@@ -34,7 +34,6 @@ class ConnectFourWindow():
         _pop_out_image_red (PIL.ImageTk.PhotoImage): czerowny znak 'X' dla przycisków wyjmowania
         _pop_out_image_yellow (PIL.ImageTk.PhotoImage): żółty znak 'X' dla przycisków wyjmowania
         _checker_dropped (tk.BooleanVar): czy moneta już spadła (informacja potrzebna do opóźnienia wyświetlenia komunikatu o wygranej)
-
     Metody: 
         set_current_mode(): Ustaw aktywny tryb dla listy rozwijanej.
         display_rules(event): Wyświetl zasady gry.
@@ -61,7 +60,6 @@ class ConnectFourWindow():
         
         Tworzone jest główne okno i wywoływana jest metoda __initialize_game, która ustala
         odpowiedni rozmiar planszy i dodaje wszystkie widgety wymagane w grze.
-
         Parametry:
             default (bool): czy gra ma zostać uruchomiona w trybie Normalnym
             logic (GameRules): obiekt z zasadami gry
@@ -77,16 +75,13 @@ class ConnectFourWindow():
         
     def __initialize_game(self, default=True, logic=None):
         """Utwórz obiekty na podstawie trybu.
-
         Na początku ustalany jest tryb w jakim rozpocznie się gra.
         Tworzone jest okno gry i umieszczane w nim są wszystkie obiekty konieczne do rozpoczęcia rozgrywki.
         Jeżeli zmienna default jest True to gra uruchomi się ze standardowymi regułami (niezależnie od tego czy podany zostanie parametr logic).
         Aby przekazać obiekt z innymi zasadami, parametr default musi zostać ustawiony na False.
-
         Parametry:
             default (bool): czy gra ma zostać uruchomiona w trybie Normalnym
             logic (GameRules): obiekt z zasadami gry
-
         Zwraca:
             None
         """
@@ -191,7 +186,6 @@ class ConnectFourWindow():
         
         Metoda odpowiedzialna za tworzenie przycisków i umieszczanie ich na planszy. Każdy przycisk odpowiedzialny jest za jedną kolumnę planszy.
         Po naciśnięciu przycisku moneta jest wyjmowana z danej kolumny (tryb PopOut).
-
         Zwraca:
             None
         """
@@ -223,7 +217,6 @@ class ConnectFourWindow():
         
         Metoda odpowiedzialna za tworzenie przycisków i umieszczanie ich na planszy. Każdy przycisk odpowiedzialny jest za jedną kolumnę planszy.
         Po naciśnięciu przycisku moneta jest umieszczana w danej kolumnie (o ile kolumna nie jest pełna).
-
         Zwraca:
             tk.Frame: zwraca ramkę, w której znajdują się przyciski.
         """
@@ -255,7 +248,6 @@ class ConnectFourWindow():
         
         Metoda odpowiedzialna za tworzenie planszy i wypełnianie jej monetami (przed rozpoczęciem rozgrywki), jeżeli wymaga tego tryb (np. "Pięć w rzędzie"). 
         Tworzona jest tutaj również zmienna self._checkers_map, która przechowuje id monet na planszy self._board.
-
         Zwraca:
             tk.Canvas: zwraca planszę, jako obiekt tk.Canvas.
         """
@@ -300,10 +292,8 @@ class ConnectFourWindow():
         
         Metoda wyświetla zasady gry dla aktualnie wybranego trybu. Zasady wyświetlane są w miejscu, w którym znajduje się plansza.
         Tekstowy opis zasad gry, który jest wyświetlany w programie, znajduje się w pliku rules_txt.py.
-
         Parametry:
             event (tkinter.Event): obiekt opisujący zdarzenie, które spowodowało wywołanie funkcji.
-
         Zwraca:
             None
         """
@@ -327,12 +317,9 @@ class ConnectFourWindow():
 
     def hide_rules(self, event):
         """Schowaj zasady gry.
-
         Metoda odpowiada za chowanie opisu zasad gry, gdy kursor myszy opuści określone miejsce w oknie gry.
-
         Parametry:
             event (tkinter.Event): obiekt opisujący zdarzenie, które spowodowało wywołanie funkcji.
-
         Zwraca:
             None
         """
@@ -343,12 +330,10 @@ class ConnectFourWindow():
         """Zmień rozmiar obrazu.
         
         Metoda zmienia długość i szerokość obrazu według podanych parametrów.
-
         Parametry:
             source (str): ścieżka do obrazu.
             width (int): docelowa szerokość obrazu w pikselach.
             height (int): docelowa długość obrazu w pikselach.
-
         Zwraca:
             PIL.ImageTk.PhotoImage: obiekt zdjęcia o rządanych wymiarach.
         """
@@ -363,10 +348,8 @@ class ConnectFourWindow():
         
         Metoda działa dla przycisków odpowiedzialnych za umieszczanie monet w odpowiednich kolumnach.
         Parametr event pozwala określić dla którego przycisku ma zostać zmieniony obraz w jego wnętrzu.
-
         Parametry:
             event (tkinter.Event): obiekt opisujący zdarzenie, które spowodowało wywołanie funkcji.
-
         Zwraca:
             None
         """
@@ -378,10 +361,8 @@ class ConnectFourWindow():
         
         Metoda działa dla przycisków odpowiedzialnych za umieszczanie monet w odpowiednich kolumnach.
         Parametr event pozwala określić dla którego przycisku ma zostać zmieniony obraz w jego wnętrzu.
-
         Parametry:
             event (tkinter.Event): obiekt opisujący zdarzenie, które spowodowało wywołanie funkcji.
-
         Zwraca:
             None
         """
@@ -390,7 +371,6 @@ class ConnectFourWindow():
 
     def move_checker(self, curr_checker, curr_y, end_y, speed=16):
         """Przesuń monetę.
-
         Metoda wykorzystywana przy wrzucaniu i usuwaniu monet z planszy.
         Przesuwa monetę (curr_checker) od podanego curr_y do pozycji end_y.
         W momencie osiągnięcia oczekiwanej pozycji zmienna self._checker_dropped jest ustawiana na True.
@@ -418,14 +398,12 @@ class ConnectFourWindow():
         """Rysuj monetę.
         
         Metoda rysuje monetę na planszy w podanym miejscu i o podanym kolorze.
-
         Parametry:
             x (int): określa położenie środka koła w poziomie.
             y (int): określa położenie środka koła w pionie.
             r (int): promień koła
             canvas (tk.Canvas): plasza, na której zostanie narysowana moneta.
             color (str): kolor monety
-
         Zwraca:
             int: id narysowanego właśnie obiektu dla danego canvas
         """
@@ -495,10 +473,8 @@ class ConnectFourWindow():
         jest przeciwnika to pojawi się komunikat o błędzie (CheckerCannotBeRemovedException).
         W zmienej win przechowywana jest informacja czy ktoś wygrał.
         Jeżeli nie ma wygranej zmieniane są obrazy przycisków i kolor przycisków na kolor gracza, który będzie wykonywał ruch.
-
         Parametry:
             col (int): indeks kolumny, z której moneta ma zostać wyjęta.
-
         Zwraca:
             None
         """
@@ -541,10 +517,8 @@ class ConnectFourWindow():
         """Wyświetl informację końcową.
         
         W zależności od tego czy gra zakończyła się remisem czy wygraną zostaje wyświetlony odpowiedni komunikat w nowym oknie.
-
         Parametry:
             draw (bool): zmienna informująca czy w grze doszło do remisu.
-
         Zwraca:
             None
         """
@@ -580,7 +554,6 @@ class ConnectFourWindow():
         """Zmień informację kogo jest tura.
         
         Metoda zmienia tekst informujący kto teraz wykonuje ruch.
-
         Zwraca:
             None
         """
@@ -592,7 +565,6 @@ class ConnectFourWindow():
         
         Metoda wyłącza działanie przycisków odpowiedzialnych za umieszczanie monet na planszy. Stan przycisku zostaje ustawiony na DISABLED.
         Wyłączane zostają również zdarzenia wykrywane przy najechaniu i zjechaniu kursorem z przycisku.
-
         Parametry:
             button_numbers (list): podawane są dokładne numery przycisków (wartości int), dla których ma zajść zmiana. Przy podaniu None wykona się na wszystkich przyciskach w rzędzie.
         Zwraca:
@@ -613,7 +585,6 @@ class ConnectFourWindow():
         Metoda zmienia jedną cechę (np. image, bg) dla wszystkich przycisków odpowiedzialnych za umieszczanie monet na planszy
         lub gdy pop_out=True to zmiana będzie wykonywana na przyciskach wyjmowania monet w trybie PopOut.
         W wypadku podania argumentu button_numbers robione jest to dla konkretnych przycisków a nie dla wszystkich.
-
         Parametry:
             property (str): nazwa parametru do modyfikacji.
             value (?): wartość jaka ma być przypisana do danego parametru. Typ wartości jest zależny od tego jaki parametr jest ustawiany.
@@ -640,7 +611,6 @@ class ConnectFourWindow():
         
         Metoda usuwająca obsługę zdarzenia dla wszystkich przycisków odpowiedzialnych za umieszczanie monet na planszy.
         W wypadku podania argumentu button_numbers usuwane jest zdarzenie dla konkretnych przycisków.
-
         Parametry:
             event_type (str): nazwa zdarzenia, które nie będzie już obsługiwane.
             button_numbers (list): podawane są dokładne numery przycisków (wartości int), dla których ma zajść zmiana. Przy podaniu None wykona się na wszystkich przyciskach w rzędzie.
@@ -659,11 +629,9 @@ class ConnectFourWindow():
         """Wyświetl informację o niepoprawnej akcji użytkownika.
         
         Na ekranie zostaje wyświetlone okno, w którym zostaje wyświetlony dany komunikat.
-
         Parametry:
             title (str): tytuł komunikatu.
             msg (str): wiadomość do wyświetlenia dla użytkownika
-
         Zwraca:
             None
         """
@@ -673,10 +641,8 @@ class ConnectFourWindow():
         """Resetuj grę.
         
         Resetuje grę w danym trybie lub uruchamia grę w innym.
-
         Parametry:
             option (str): tryb gry
-
         Zwraca:
             None
         """
@@ -693,7 +659,6 @@ class ConnectFourWindow():
         """Uruchom pętlę zdarzeń.
         
         Uruchamia pętlę zdarzeń dla tego okna. 
-
         Zwraca:
             None
         """

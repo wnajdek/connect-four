@@ -104,11 +104,3 @@ class PopOut(NormalRules):
             bool: w tym wypadku zawsze zwraca False.
         """
         return False
-
-    def who_win(self):
-        """Kto wygrał.
-        
-        Zwraca:
-            Player: Zwraca gracza, który wygrał.
-        """
-        return self._winner
